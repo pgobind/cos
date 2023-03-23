@@ -1,0 +1,67 @@
+resource "aws_glue_catalog_table" "my_table" {
+  name          = "my_table"
+  database_name = "my_database"
+
+  storage_descriptor {
+    location     = "s3://my-bucket/my-directory/"
+    input_format = "org.apache.hadoop.mapred.TextInputFormat"
+    output_format = "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+    serde_info {
+      parameters = {
+        "serialization.format" = "1"
+      }
+    }
+    columns {
+      name = "column1"
+      type = "string"
+    }
+    columns {
+      name = "column2"
+      type = "int"
+    }
+    compressed      = true
+    number_of_files = 1
+    recursive       = true
+  }
+
+  partition_keys {
+    name = "date"
+    type = "string"
+  }
+}
+
+resource "null_resource" "add_new_column" {
+  triggers = {
+    table_version = aws_glue_catalog_table.my_table.version_id
+  }
+
+  provisioner "local-exec" {
+    command = <<EOF
+      # Define the Glue client
+      glue_client = boto3.client('glue')
+
+      # Get the table details
+      table = glue_client.get_table(
+          DatabaseName='${aws_glue_catalog_table.my_table.database_name}',
+          Name='${aws_glue_catalog_table.my_table.name}'
+      )['Table']
+
+      # Define the new column and its default value
+      new_column = {
+          'Name': 'new_column',
+          'Type': 'string',
+          'Comment': 'My new column',
+          'DefaultValue': 'default_value'
+      }
+
+      # Add the new column to the table
+      table['StorageDescriptor']['Columns'].append(new_column)
+
+      # Update the table in the Glue Data Catalog
+      glue_client.update_table(
+          DatabaseName='${aws_glue_catalog_table.my_table.database_name}',
+          TableInput=table
+      )
+    EOF
+  }
+}
