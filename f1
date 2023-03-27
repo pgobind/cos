@@ -1,21 +1,78 @@
-  parameters = {
-    "classification" = "csv"
-    "compressionType" = "none"
-    "delimiter" = ","
-    "skip.header.line.count" = "1"
-  }
+<dependency>
+  <groupId>com.amazonaws</groupId>
+  <artifactId>aws-java-sdk</artifactId>
+  <version>${aws-java-sdk.version}</version>
+</dependency>
+<dependency>
+  <groupId>com.amazonaws</groupId>
+  <artifactId>aws-java-sdk-glue</artifactId>
+  <version>${aws-java-sdk.version}</version>
+</dependency>
+<dependency>
+  <groupId>com.amazonaws</groupId>
+  <artifactId>aws-java-sdk-s3</artifactId>
+  <version>${aws-java-sdk.version}</version>
+</dependency>
+<dependency>
+  <groupId>org.apache.hadoop</groupId>
+  <artifactId>hadoop-aws</artifactId>
+  <version>${hadoop.version}</version>
+</dependency>
+<dependency>
+  <groupId>org.apache.spark</groupId>
+  <artifactId>spark-core_2.11</artifactId>
+  <version>${spark.version}</version>
+  <scope>provided</scope>
+</dependency>
+<dependency>
+  <groupId>org.apache.spark</groupId>
+  <artifactId>spark-sql_2.11</artifactId>
+  <version>${spark.version}</version>
+  <scope>provided</scope>
+</dependency>
+<dependency>
+  <groupId>com.databricks</groupId>
+  <artifactId>spark-avro_2.11</artifactId>
+  <version>${spark-avro.version}</version>
+  <scope>provided</scope>
+</dependency>
 
-  storage_descriptor {
-    columns = var.glue_table_columns
-    input_format = "org.apache.hadoop.mapred.TextInputFormat"
-    output_format = "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
-    location = "s3://${var.s3_bucket}/${var.s3_key}"
-    serde_info {
-      name = "serde"
-      serialization_library = "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"
-      parameters = {
-        "field.delim" = ","
-        "serialization.format" = ","
-      }
-    }
-  }
+
+
+
+<parent>
+  <groupId>com.example</groupId>
+  <artifactId>my-glue-job</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+</parent>
+<dependencies>
+  <dependency>
+    <groupId>com.amazonaws</groupId>
+    <artifactId>aws-java-sdk</artifactId>
+  </dependency>
+  <dependency>
+    <groupId>com.amazonaws</groupId>
+    <artifactId>aws-java-sdk-glue</artifactId>
+  </dependency>
+</dependencies>
+
+package com.example.mygluejob.etl;
+
+import com.amazonaws.services.glue.GlueContext;
+import com.amazonaws.services.glue.util.Job;
+import org.apache.spark.sql.SparkSession;
+
+public class EtlJob {
+
+  public static void main(String[] args) {
+    // Create a new GlueContext and SparkSession
+    GlueContext glueContext = new GlueContext(new SparkContext(new SparkConf()));
+    SparkSession spark = glueContext.getSparkSession();
+
+    // Define the input and output paths
+    String inputPath = "s3://my-bucket/input";
+    String outputPath = "s3://my-bucket/output";
+
+    // Define the job script and run it
+    Job job = Job
+
