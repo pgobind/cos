@@ -5,32 +5,85 @@ name: ReconciliationProcess
 input_path: s3://input-bucket/input/path
 output_path: s3://output-bucket/output/path
 
-# Define the first reconciliation job
-- name: Job1
-  type: Spark
-  class: com.example.Job1
-  input_path: ${input_path}/job1
-  output_path: ${output_path}/job1
-  schedule: "0 0 * * *"
-  compare_columns:
-    - col1
-    - col2
-    - col3
-  additional_parameters:
-    - param1: value1
-    - param2: value2
-
-# Define the second reconciliation job
-- name: Job2
-  type: Hive
-  script_path: s3://scripts-bucket/scripts/job2.hql
-  input_path: ${input_path}/job2
-  output_path: ${output_path}/job2
-  schedule: "0 0 */2 * *"
-  compare_columns:
-    - col4
-    - col5
-    - col6
-  additional_parameters:
-    - param3: value3
-    - param4: value4
+# Define the job sequences
+job_sequences:
+  # Define the first job sequence
+  - name: Sequence1
+    jobs:
+      # Define the first job in the sequence
+      - name: Job1
+        class: com.example.Job1
+        input_path: ${input_path}/job1
+        output_path: ${output_path}/job1
+        schedule: "0 0 * * *"
+        compare_columns:
+          - col1
+          - col2
+          - col3
+        left_expression:
+          col1: "col1 * 2"
+          col3: "col3 + 1"
+        left_enrichment:
+          type: Lambda
+          function_name: left_enrichment_function
+          input_path: s3://enrichment-bucket/job1/left/
+          output_path: s3://enrichment-bucket/job1/left/output/
+        right_enrichment:
+          type: Lambda
+          function_name: right_enrichment_function
+          input_path: s3://enrichment-bucket/job1/right/
+          output_path: s3://enrichment-bucket/job1/right/output/
+        additional_parameters:
+          - param1: value1
+          - param2: value2
+        triggers:
+          - type: SQS
+            queue_name: job1-sqs
+            message_body: "Job1 finished successfully"
+      # Define the second job in the sequence
+      - name: Job2
+        class: com.example.Job2
+        input_path: ${input_path}/job2
+        output_path: ${output_path}/job2
+        schedule: "0 0 */2 * *"
+        compare_columns:
+          - col4
+          - col5
+          - col6
+        left_expression:
+          col4: "col4 / 2"
+          col6: "col6 * 2"
+        left_enrichment:
+          type: Lambda
+          function_name: left_enrichment_function
+          input_path: s3://enrichment-bucket/job2/left/
+          output_path: s3://enrichment-bucket/job2/left/output/
+        right_enrichment:
+          type: Lambda
+          function_name: right_enrichment_function
+          input_path: s3://enrichment-bucket/job2/right/
+          output_path: s3://enrichment-bucket/job2/right/output/
+        additional_parameters:
+          - param3: value3
+          - param4: value4
+        triggers:
+          - type: Lambda
+            function_name: job2-trigger
+            input_path: ${output_path}/job2
+    # Define a sub-sequence within Sequence1
+    - name: Sequence1a
+      jobs:
+        - name: Job3
+          class: com.example.Job3
+          input_path: ${output_path}/job1
+          output_path: ${output_path}/job3
+          schedule: "0 0 */3 * *"
+          compare_columns:
+            - col7
+            - col8
+            - col9
+          left_expression:
+            col7: "col7 * 3"
+            col9: "col9 + 2"
+          left_enrichment:
+            type
