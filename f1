@@ -1,78 +1,36 @@
-<dependency>
-  <groupId>com.amazonaws</groupId>
-  <artifactId>aws-java-sdk</artifactId>
-  <version>${aws-java-sdk.version}</version>
-</dependency>
-<dependency>
-  <groupId>com.amazonaws</groupId>
-  <artifactId>aws-java-sdk-glue</artifactId>
-  <version>${aws-java-sdk.version}</version>
-</dependency>
-<dependency>
-  <groupId>com.amazonaws</groupId>
-  <artifactId>aws-java-sdk-s3</artifactId>
-  <version>${aws-java-sdk.version}</version>
-</dependency>
-<dependency>
-  <groupId>org.apache.hadoop</groupId>
-  <artifactId>hadoop-aws</artifactId>
-  <version>${hadoop.version}</version>
-</dependency>
-<dependency>
-  <groupId>org.apache.spark</groupId>
-  <artifactId>spark-core_2.11</artifactId>
-  <version>${spark.version}</version>
-  <scope>provided</scope>
-</dependency>
-<dependency>
-  <groupId>org.apache.spark</groupId>
-  <artifactId>spark-sql_2.11</artifactId>
-  <version>${spark.version}</version>
-  <scope>provided</scope>
-</dependency>
-<dependency>
-  <groupId>com.databricks</groupId>
-  <artifactId>spark-avro_2.11</artifactId>
-  <version>${spark-avro.version}</version>
-  <scope>provided</scope>
-</dependency>
+# Reconciliation process configuration file
+name: ReconciliationProcess
 
+# Define the input and output paths
+input_path: s3://input-bucket/input/path
+output_path: s3://output-bucket/output/path
 
+# Define the first reconciliation job
+- name: Job1
+  type: Spark
+  class: com.example.Job1
+  input_path: ${input_path}/job1
+  output_path: ${output_path}/job1
+  schedule: "0 0 * * *"
+  compare_columns:
+    - col1
+    - col2
+    - col3
+  additional_parameters:
+    - param1: value1
+    - param2: value2
 
-
-<parent>
-  <groupId>com.example</groupId>
-  <artifactId>my-glue-job</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
-</parent>
-<dependencies>
-  <dependency>
-    <groupId>com.amazonaws</groupId>
-    <artifactId>aws-java-sdk</artifactId>
-  </dependency>
-  <dependency>
-    <groupId>com.amazonaws</groupId>
-    <artifactId>aws-java-sdk-glue</artifactId>
-  </dependency>
-</dependencies>
-
-package com.example.mygluejob.etl;
-
-import com.amazonaws.services.glue.GlueContext;
-import com.amazonaws.services.glue.util.Job;
-import org.apache.spark.sql.SparkSession;
-
-public class EtlJob {
-
-  public static void main(String[] args) {
-    // Create a new GlueContext and SparkSession
-    GlueContext glueContext = new GlueContext(new SparkContext(new SparkConf()));
-    SparkSession spark = glueContext.getSparkSession();
-
-    // Define the input and output paths
-    String inputPath = "s3://my-bucket/input";
-    String outputPath = "s3://my-bucket/output";
-
-    // Define the job script and run it
-    Job job = Job
-
+# Define the second reconciliation job
+- name: Job2
+  type: Hive
+  script_path: s3://scripts-bucket/scripts/job2.hql
+  input_path: ${input_path}/job2
+  output_path: ${output_path}/job2
+  schedule: "0 0 */2 * *"
+  compare_columns:
+    - col4
+    - col5
+    - col6
+  additional_parameters:
+    - param3: value3
+    - param4: value4
