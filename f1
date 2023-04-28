@@ -1,89 +1,70 @@
-# Reconciliation process configuration file
-name: ReconciliationProcess
+import com.ibm.mq.*;
+import org.apache.spark.SparkConf;
+import org.apache.spark.streaming.Duration;
+import org.apache.spark.streaming.StreamingContext;
+import org.apache.spark.streaming.api.java.JavaDStream;
+import org.apache.spark.streaming.api.java.JavaStreamingContext;
+import org.apache.spark.streaming.receiver.Receiver;
 
-# Define the input and output paths
-input_path: s3://input-bucket/input/path
-output_path: s3://output-bucket/output/path
+import java.io.UnsupportedEncodingException;
 
-# Define the job sequences
-job_sequences:
-  # Define the first job sequence
-  - name: Sequence1
-    jobs:
-      # Define the first job in the sequence
-      - name: Job1
-        class: com.example.Job1
-        input_path: ${input_path}/job1
-        output_path: ${output_path}/job1
-        schedule: "0 0 * * *"
-        compare_columns:
-          - col1
-          - col2
-          - col3
-        left_expression:
-          col1: "col1 * 2"
-          col3: "col3 + 1"
-        left_enrichment:
-          type: Lambda
-          function_name: left_enrichment_function
-          input_path: s3://enrichment-bucket/job1/left/
-          output_path: s3://enrichment-bucket/job1/left/output/
-        right_enrichment:
-          type: Lambda
-          function_name: right_enrichment_function
-          input_path: s3://enrichment-bucket/job1/right/
-          output_path: s3://enrichment-bucket/job1/right/output/
-        additional_parameters:
-          - param1: value1
-          - param2: value2
-        triggers:
-          - type: SQS
-            queue_name: job1-sqs
-            message_body: "Job1 finished successfully"
-      # Define the second job in the sequence
-      - name: Job2
-        class: com.example.Job2
-        input_path: ${input_path}/job2
-        output_path: ${output_path}/job2
-        schedule: "0 0 */2 * *"
-        compare_columns:
-          - col4
-          - col5
-          - col6
-        left_expression:
-          col4: "col4 / 2"
-          col6: "col6 * 2"
-        left_enrichment:
-          type: Lambda
-          function_name: left_enrichment_function
-          input_path: s3://enrichment-bucket/job2/left/
-          output_path: s3://enrichment-bucket/job2/left/output/
-        right_enrichment:
-          type: Lambda
-          function_name: right_enrichment_function
-          input_path: s3://enrichment-bucket/job2/right/
-          output_path: s3://enrichment-bucket/job2/right/output/
-        additional_parameters:
-          - param3: value3
-          - param4: value4
-        triggers:
-          - type: Lambda
-            function_name: job2-trigger
-            input_path: ${output_path}/job2
-    # Define a sub-sequence within Sequence1
-    - name: Sequence1a
-      jobs:
-        - name: Job3
-          class: com.example.Job3
-          input_path: ${output_path}/job1
-          output_path: ${output_path}/job3
-          schedule: "0 0 */3 * *"
-          compare_columns:
-            - col7
-            - col8
-            - col9
-          left_expression:
-            col7: "col7 * 3"
-            col9: "col9 + 2"
-          left_enrichment:
-            type
+public class MQStreamJob {
+    public static void main(String[] args) throws InterruptedException {
+        SparkConf conf = new SparkConf().setAppName("MQStreamJob");
+        JavaStreamingContext ssc = new JavaStreamingContext(conf, new Duration(1800000)); // 30 minute batch interval
+        JavaDStream<String> stream = ssc.receiverStream(new MQReceiver("mqhost", 1414, "mqchannel", "mqmanager", "mqqueue"));
+        stream.print();
+        ssc.start();
+        ssc.awaitTermination();
+    }
+
+    public static class MQReceiver extends Receiver<String> {
+        private MQQueueManager qmgr;
+        private MQQueue queue;
+
+        public MQReceiver(String host, int port, String channel, String queueManager, String queueName) {
+            super(StorageLevel.MEMORY_AND_DISK_2());
+            MQEnvironment.hostname = host;
+            MQEnvironment.port = port;
+            MQEnvironment.channel = channel;
+            MQEnvironment.userID = "mquser";
+            MQEnvironment.password = "mqpassword";
+            MQEnvironment.sslCipherSuite = "TLS_RSA_WITH_AES_256_CBC_SHA256";
+            MQEnvironment.sslFipsRequired = true;
+            try {
+                qmgr = new MQQueueManager(queueManager);
+                queue = qmgr.accessQueue(queueName, MQC.MQOO_INPUT_SHARED);
+            } catch (MQException e) {
+                e.printStackTrace();
+            }
+        }
+
+        public void onStart() {
+            new Thread(this::receive).start();
+        }
+
+        public void onStop() {
+            try {
+                queue.close();
+                qmgr.disconnect();
+            } catch (MQException e) {
+                e.printStackTrace();
+            }
+        }
+
+        private void receive() {
+            while (!isStopped()) {
+                try {
+                    MQMessage msg = new MQMessage();
+                    MQGetMessageOptions gmo = new MQGetMessageOptions();
+                    gmo.options = MQC.MQGMO_WAIT | MQC.MQGMO_CONVERT;
+                    gmo.waitInterval = 1800000; // 30 minutes in milliseconds
+                    queue.get(msg, gmo);
+                    store(new String(msg.toByteArray(), "UTF-8"));
+                } catch (MQException | UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+}
