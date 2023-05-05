@@ -2,3 +2,6 @@ spring-boot.run.jvmArguments=--add-opens java.base/java.nio=ALL-UNNAMED
 
 
 CMD java $JAVA_OPTS -cp /app/ org.springframework.boot.loader.JarLauncher
+
+
+ENV JAVA_OPTS "${JAVA_OPTS} --add-opens java.base/java.nio=ALL-UNNAMED"
