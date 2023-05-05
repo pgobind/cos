@@ -24,3 +24,21 @@
     </plugin>
   </plugins>
 </build>
+
+
+ENV JAVA_OPTS="--add-opens=java.base/java.util.stream=ALL-UNNAMED \
+               --add-opens=java.base/java.util=ALL-UNNAMED \
+               --add-opens=java.base/java.lang.reflect=ALL-UNNAMED \
+               --add-opens=java.base/java.lang=ALL-UNNAMED \
+               --add-opens=java.base/java.nio=ALL-UNNAMED \
+               --add-opens=java.base/java.lang.ref=ALL-UNNAMED \
+               --add-opens=java.base/java.time=ALL-UNNAMED \
+               --add-opens=java.base/java.lang.reflect=ALL-UNNAMED \
+               --add-opens=java.base/java.io=ALL-UNNAMED \
+               --add-exports=java.base/sun.nio.ch=ALL-UNNAMED \
+               --add-opens=java.base/java.base=ALL-UNNAMED \
+               --add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED \
+               --add-opens=java.base/java.net=ALL-UNNAMED \
+               --add-exports=java.base/sun.net.www.protocol.http=ALL-UNNAMED"
+
+CMD java $JAVA_OPTS -cp /app/ org.springframework.boot.loader.JarLauncher
