@@ -1,130 +1,75 @@
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
-import static org.apache.spark.sql.functions.*;
+Dataset<Row> outputDataset = inputDataset.selectExpr(
+        "'TP' as in_trade",
+        "PACCT as id_acct_morgan",
+        "'1' as id_firm",
+        "null as id_ofc",
+        "PACCT as id_gmi_cust",
+        "PATCOM as id_acc_ccy_gmi",
+        "concat(PCLASS, PSUBCL) as id_class",
+        "PEXCH as id_exch",
+        "PFC as id_gmi_imnt",
+        "substring(PCTYM, 3, 2) as tx_dt_ctrt_yr",
+        "substring(PCTYM, 5, 2) as tx_dt_ctrt_mo",
+        // Add the rest of the column expressions here
+        "null as in_put_call",
+        "null as pr_strk",
+        "PTPRIC as pr_trans",
+        "trim(PPRTPR) as pr_trans_prt",
+        "PCLOSE as pr_clse",
+        "PPRTCP as pr_clse_prt",
+        "PBS as in_buy_sale",
+        "ceil(PQTY) as am_ctrt",
+        "PCARD as id_ticket",
+        "to_date(cast(PTDATE as string), 'yyyyMMdd') as dt_trd",
+        "PNET as am_net",
+        "PMKVAL as am_mkt",
+        "PCOMM as am_comm_jpm",
+        "0 as am_comm_extn",
+        "0 as am_gi_go",
+        "PFEE1 as am_clr_fee",
+        "0 as am_exch_fee",
+        "0 as am_vat_fee",
+        "PDELTA * PMULTF as am_delta",
+        "PEXBKR as id_exec_broker_gmi",
+        "coalesce(trim(PGIVIO), 'FS') as in_gi_go",
+        "nullif(trim(PGIVF#), '') as id_gigo_broker_gmi",
+        "substring(PCMNT1, 2, 1) as id_type_exec",
+        "0 as id_sys_rec",
+        "'' as id_fac",
+        "PCUSIP as id_cusip",
+        "PSBCUS as id_sub_cusip",
+        "0 as id_ou",
+        "PCURSY as id_ccy_iso",
+        "0 as id_le",
+        "to_date(cast(PSDATE as string), 'yyyyMMdd') as dt_upd_lst",
+        "PMULTF * PQTY as am_nom",
+        "PSTYPE as id_imnt_typ",
+        "floor(PGROSS) as am_orig_prem",
+        "PMVARN as am_prm_incp_unrl",
+        "PTRACE as id_gmi_trd_pos",
+        "ceil(PQTY) as am_ctrt_sign",
+        "'' as id_pos_dtl",
+        "'' as id_clr_brkr_gmi",
+        "current_date() as dt_integr",
+        "to_date(cast(PLTDAT as string), 'yyyyMMdd') as dt_trd_lst",
+        "round(PMULTF * PQTY * PTPRIC, 2) as am_ctgt",
+        "PPRVCP as pr_prev_clse",
+        "PFC as id_sym",
+        "to_date(cast(PPRCDT as string), 'yyyyMMdd') as dt_priced",
+        "PSDSC1 as nm_cusip1",
+        "PSDSC2 as nm_cusip2",
+        "nullif(PPTYPE, ' ') as in_typ_pd",
+       
+        "CASE " +
+            "WHEN PTPEDT IN ('C', 'P') AND PPTYPE NOT IN ('A', 'X', 'U', 'Q') THEN '0.01' " +
+            "WHEN PTPEDT = 'X' AND PPTYPE NOT IN ('A', 'X', 'U', 'Q') THEN '1 1/8' " +
+            "ELSE null " +
+        "END as am_min_mov_prt",
+        "'D' as id_prod_typ",
+        "PMULTF as am_mult",
+        "PSBCUS as tx_dt_ctrt_dd_nstd",
+        "'GMI' as id_sys",
+        "to_date(cast(PEXPDT as string), 'yyyyMMdd') as dt_expy"
+    );
 
-public class SparkS3Select {
-    public static void main(String[] args) {
-        SparkSession spark = SparkSession.builder()
-                .appName("Spark S3 Select Example")
-                .master("local[*]")
-                .getOrCreate();
-
-        // Read the source data from S3
-        String inputPath = "s3a://your-bucket/path/to/input.csv";
-        Dataset<Row> inputData = spark.read()
-                .format("csv")
-                .option("header", "true")
-                .option("inferSchema", "true")
-                .load(inputPath);
-
-        // Apply the required transformations
-        Dataset<Row> filteredData = inputData
-                .filter(col("PSYMBL").equalTo(""))
-                .filter(not(col("PTYPE").equalTo("O").and(col("PSTYPE").equalTo("F"))))
-                .filter(col("PRECID").equalTo("P"))
-                .filter(col("PTRACE").notEqual("*"))
-                .filter(col("PSTYPE").notEqual("B"))
-                .filter(not(col("PEXCH").like("[A-Z]1")))
-                .filter(col("PSUBTY").notEqual("S"))
-                .filter(col("PQTY").geq(-2147483648).and(col("PQTY").leq(2147483647)));
-
-       import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
-import static org.apache.spark.sql.functions.*;
-
-public class SparkSQLExample {
-    public static void main(String[] args) {
-        SparkSession spark = SparkSession.builder()
-                .appName("Spark SQL Example")
-                .master("local[*]")
-                .getOrCreate();
-
-        // Read the source data from S3
-        String inputPath = "s3a://your-bucket/path/to/input.csv";
-        Dataset<Row> inputData = spark.read()
-                .format("csv")
-                .option("header", "true")
-                .option("inferSchema", "true")
-                .load(inputPath);
-
-        // Apply the required transformations
-        Dataset<Row> resultData = inputData
-                .withColumn("in_trade", lit("TP"))
-                .withColumn("id_acct_morgan", col("PACCT"))
-                .withColumn("id_firm", lit("1"))
-                .withColumn("id_ofc", lit(null))
-                .withColumn("id_gmi_cust", col("PACCT"))
-                .withColumn("id_acc_ccy_gmi", col("PATCOM"))
-                .withColumn("id_class", concat(col("PCLASS"), col("PSUBCL")))
-                .withColumn("id_exch", col("PEXCH"))
-                .withColumn("id_gmi_imnt", col("PFC"))
-                .withColumn("tx_dt_ctrt_yr", substring(col("PCTYM"), 3, 2))
-                .withColumn("tx_dt_ctrt_mo", substring(col("PCTYM"), 5, 2))
-                .withColumn("tx_dt_ctrt_dd", when(col("PPTYPE").equalTo("J").and(col("PEXCH").isin("7T", "7U")),
-                        substring(to_date(col("PEXPDT"), "yyyyMMdd"), 7, 2))
-                        .otherwise(substring(to_date(col("PLTDAT"), "yyyyMMdd"), 7, 2)))
-                .withColumn("in_put_call", lit(null))
-                .withColumn("pr_strk", lit(null))
-                .withColumn("pr_trans", col("PTPRIC"))
-                .withColumn("pr_trans_prt", rtrim(ltrim(col("PPRTPR"))))
-                .withColumn("pr_clse", col("PCLOSE"))
-                .withColumn("pr_clse_prt", col("PPRTCP"))
-                .withColumn("in_buy_sale", col("PBS"))
-                .withColumn("am_ctrt", ceil(col("PQTY")).cast("int"))
-                .withColumn("id_ticket", col("PCARD"))
-                .withColumn("dt_trd", to_date(col("PTDATE"), "yyyyMMdd"))
-                .withColumn("am_net", col("PNET"))
-                .withColumn("am_mkt", col("PMKVAL"))
-                .withColumn("am_comm_jpm", col("PCOMM"))
-                .withColumn("am_comm_extn", lit(0))
-                .withColumn("am_gi_go", lit(0))
-                .withColumn("am_clr_fee", col("PFEE1"))
-                .withColumn("am_exch_fee", lit(0))
-                .withColumn("am_vat_fee", lit(0))
-                .withColumn("am_delta", col("PDELTA").multiply(col("PMULTF")))
-                .withColumn("id_exec_broker_gmi", col("PEXBKR
-                .withColumn("in_gi_go", when(col("PGIVIO").isNull(), lit("FS")).otherwise(ltrim(rtrim(col("PGIVIO")))))
-                .withColumn("id_gigo_broker_gmi", when(col("PGIVF#").equalTo(""), lit(null)).otherwise(col("PGIVF#")))
-                .withColumn("id_type_exec", substring(col("PCMNT1"), 2, 1))
-                .withColumn("id_sys_rec", lit(0))
-                .withColumn("id_fac", lit(""))
-                .withColumn("id_cusip", col("PCUSIP"))
-                .withColumn("id_sub_cusip", col("PSBCUS"))
-                .withColumn("id_ou", lit(0))
-                .withColumn("id_ccy_iso", col("PCURSY"))
-                .withColumn("id_le", lit(0))
-                .withColumn("dt_upd_lst", to_date(col("PSDATE"), "yyyyMMdd"))
-                .withColumn("am_nom", col("PMULTF").multiply(col("PQTY")))
-                .withColumn("id_imnt_typ", col("PSTYPE"))
-                .withColumn("am_orig_prem", floor(col("PGROSS")))
-                .withColumn("am_prm_incp_unrl", col("PMVARN"))
-                .withColumn("id_gmi_trd_pos", col("PTRACE"))
-                .withColumn("am_ctrt_sign", ceil(col("PQTY")).cast("int"))
-                .withColumn("id_pos_dtl", lit(""))
-                .withColumn("id_clr_brkr_gmi", lit(""))
-                .withColumn("dt_integr", current_date())
-                .withColumn("dt_trd_lst", when(length(col("PLTDAT").cast("string")).equalTo(8),
-                        to_date(col("PLTDAT"), "yyyyMMdd")).otherwise(lit(null)))
-                .withColumn("am_ctgt", col("PMULTF").multiply(col("PQTY")).multiply(col("PTPRIC")))
-                .withColumn("pr_prev_clse", col("PPRVCP"))
-                .withColumn("id_sym", col("PFC"))
-                .withColumn("dt_priced", when(col("PPRCDT").equalTo(0), lit(null)).otherwise(to_date(col("PPRCDT"), "yyyyMMdd")))
-                .withColumn("nm_cusip1", col("PSDSC1"))
-                .withColumn("nm_cusip2", col("PSDSC2"))
-                .withColumn("in_typ_pd", when(col("PPTYPE").equalTo(" "), lit(null)).otherwise(col("PPTYPE")))
-                .withColumn("am_min_mov_prt", when(col("PTPEDT").isin("C", "P").and(col("PPTYPE").notEqual("A").and(col("PPTYPE").notEqual("X").and(col("PPTYPE").notEqual("U").and(col("PPTYPE").notEqual("Q"))))), lit("0.01"))
-                        .when(col("PTPEDT").equalTo("X").and(col("PPTYPE").notEqual("A").and(col("PPTYPE").notEqual("X").and(col("PPTYPE").notEqual("U").and(col("PPTYPE").notEqual("Q"))))), lit("1 1/8"))
-                        .otherwise(lit(null)))
-                .withColumn("id_prod_typ", lit("D"))
-                .withColumn("am_mult", col("PMULTF"))
-                .withColumn("tx_dt_ctrt_dd_nstd", col("PSBCUS"))
-                .withColumn("id_sys", lit("GMI"))
-                .withColumn("dt_expy", when(length(col("PEXPDT").cast("string")).equalTo(8), 
-                        to_date(col("PEXPDT"), "yyyyMMdd")).otherwise(lit(null)));
-
-        // Write the transformed data to the output path
-        
-
-
+// Write the outputDataset to a file or process it further as needed
