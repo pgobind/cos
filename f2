@@ -1,36 +1,3 @@
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
-import static org.apache.spark.sql.functions.*;
-
-public class SparkS3Select {
-    public static void main(String[] args) {
-        SparkSession spark = SparkSession.builder()
-                .appName("Spark S3 Select Example")
-                .master("local[*]")
-                .getOrCreate();
-
-        // Read the source data from S3
-        String inputPath = "s3a://your-bucket/path/to/input.csv";
-        Dataset<Row> inputData = spark.read()
-                .format("csv")
-                .option("header", "true")
-                .option("inferSchema", "true")
-                .load(inputPath);
-
-        // Apply the required transformations
-        Dataset<Row> filteredData = inputData
-                .filter(col("PSYMBL").equalTo(""))
-                .filter(not(col("PTYPE").equalTo("O").and(col("PSTYPE").equalTo("F"))))
-                .filter(col("PRECID").equalTo("P"))
-                .filter(col("PTRACE").notEqual("*"))
-                .filter(col("PSTYPE").notEqual("B"))
-                .filter(not(col("PEXCH").like("[A-Z]1")))
-                .filter(col("PSUBTY").notEqual("S"))
-                .filter(col("PQTY").geq(-2147483648).and(col("PQTY").leq(2147483647)));
-
-        // Select the required columns and add new columns using withColumn()
-        Dataset<Row> resultData = filteredData.select(
                 lit("TP").as("in_trade"),
                 col("PACCT").as("id_acct_morgan"),
                 lit("1").as("id_firm"),
@@ -42,8 +9,8 @@ public class SparkS3Select {
                 col("PFC").as("id_gmi_imnt"),
                 substring(col("PCTYM"), 3, 2).as("tx_dt_ctrt_yr"),
                 substring(col("PCTYM"), 5, 2).as("tx_dt_ctrt_mo"),
-                when(col("PPTYPE").equalTo("J").and(col("PEXCH").isin("7T", "7U")), substring(convert(col("PEXPDT"), StringType), 7, 2))
-                        .otherwise(substring(convert(col("PLTDAT"), StringType), 7, 2)).as("tx_dt_ctrt_dd"),
+                when(col("PPTYPE").equalTo("J").and(col("PEXCH").isin("7T", "7U")), substring(to_date(col("PEXPDT"), "yyyyMMdd"), 7, 2))
+                        .otherwise(substring(to_date(col("PLTDAT"), "yyyyMMdd"), 7, 2)).as("tx_dt_ctrt_dd"),
                 lit(null).as("in_put_call"),
                 lit(null).as("pr_strk"),
                 col("PTPRIC").as("pr_trans"),
@@ -53,8 +20,6 @@ public class SparkS3Select {
                 col("PBS").as("in_buy_sale"),
                 ceil(col("PQTY")).cast("int").as("am_ctrt"),
                 col("PCARD").as("id_ticket"),
-                to_date(convert(col("PTDATE"), StringType), "yyyyMMdd").as("dt_trd"),
+                to_date(col("PTDATE"), "yyyyMMdd").as("dt_trd"),
                 col("PNET").as("am_net"),
                 col("PMKVAL").as("am_mkt"),
-                col("PCOMM").as("am_comm_jpm"),
-                lit(0).as("am_comm_extn"),
