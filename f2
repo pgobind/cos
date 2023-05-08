@@ -1,35 +1,60 @@
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions._
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import static org.apache.spark.sql.functions.*;
 
-object SparkS3Select {
-  def main(args: Array[String]): Unit = {
-    val spark = SparkSession.builder()
-      .appName("Spark S3 Select Example")
-      .master("local[*]")
-      .getOrCreate()
+public class SparkS3Select {
+    public static void main(String[] args) {
+        SparkSession spark = SparkSession.builder()
+                .appName("Spark S3 Select Example")
+                .master("local[*]")
+                .getOrCreate();
 
-    // Read the source data from S3
-    val inputPath = "s3a://your-bucket/path/to/input.csv"
-    val inputData = spark.read
-      .format("csv")
-      .option("header", "true")
-      .option("inferSchema", "true")
-      .load(inputPath)
+        // Read the source data from S3
+        String inputPath = "s3a://your-bucket/path/to/input.csv";
+        Dataset<Row> inputData = spark.read()
+                .format("csv")
+                .option("header", "true")
+                .option("inferSchema", "true")
+                .load(inputPath);
 
-    // Apply the required transformations
-    val filteredData = inputData
-      .filter(col("PSYMBL") === "")
-      .filter(!(col("PTYPE") === "O" && col("PSTYPE") === "F"))
-      .filter(col("PRECID") === "P")
-      .filter(col("PTRACE").notEqual("*"))
-      .filter(col("PSTYPE") =!= "B")
-      .filter(!(col("PEXCH").like("[A-Z]1")))
-      .filter(col("PSUBTY") =!= "S")
-      .filter(col("PQTY") >= -2147483648 && col("PQTY") <= 2147483647)
+        // Apply the required transformations
+        Dataset<Row> filteredData = inputData
+                .filter(col("PSYMBL").equalTo(""))
+                .filter(not(col("PTYPE").equalTo("O").and(col("PSTYPE").equalTo("F"))))
+                .filter(col("PRECID").equalTo("P"))
+                .filter(col("PTRACE").notEqual("*"))
+                .filter(col("PSTYPE").notEqual("B"))
+                .filter(not(col("PEXCH").like("[A-Z]1")))
+                .filter(col("PSUBTY").notEqual("S"))
+                .filter(col("PQTY").geq(-2147483648).and(col("PQTY").leq(2147483647)));
 
-    // ... Select the required columns and add new columns using withColumn()
-    // ... Write the resulting DataFrame back to S3
-
-    spark.stop()
-  }
-}
+        // Select the required columns and add new columns using withColumn()
+        Dataset<Row> resultData = filteredData.select(
+                lit("TP").as("in_trade"),
+                col("PACCT").as("id_acct_morgan"),
+                lit("1").as("id_firm"),
+                lit(null).as("id_ofc"),
+                col("PACCT").as("id_gmi_cust"),
+                col("PATCOM").as("id_acc_ccy_gmi"),
+                concat(col("PCLASS"), col("PSUBCL")).as("id_class"),
+                col("PEXCH").as("id_exch"),
+                col("PFC").as("id_gmi_imnt"),
+                substring(col("PCTYM"), 3, 2).as("tx_dt_ctrt_yr"),
+                substring(col("PCTYM"), 5, 2).as("tx_dt_ctrt_mo"),
+                when(col("PPTYPE").equalTo("J").and(col("PEXCH").isin("7T", "7U")), substring(convert(col("PEXPDT"), StringType), 7, 2))
+                        .otherwise(substring(convert(col("PLTDAT"), StringType), 7, 2)).as("tx_dt_ctrt_dd"),
+                lit(null).as("in_put_call"),
+                lit(null).as("pr_strk"),
+                col("PTPRIC").as("pr_trans"),
+                rtrim(ltrim(col("PPRTPR"))).as("pr_trans_prt"),
+                col("PCLOSE").as("pr_clse"),
+                col("PPRTCP").as("pr_clse_prt"),
+                col("PBS").as("in_buy_sale"),
+                ceil(col("PQTY")).cast("int").as("am_ctrt"),
+                col("PCARD").as("id_ticket"),
+                to_date(convert(col("PTDATE"), StringType), "yyyyMMdd").as("dt_trd"),
+                col("PNET").as("am_net"),
+                col("PMKVAL").as("am_mkt"),
+                col("PCOMM").as("am_comm_jpm"),
+                lit(0).as("am_comm_extn"),
