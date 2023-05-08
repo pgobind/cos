@@ -1,0 +1,35 @@
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions._
+
+object SparkS3Select {
+  def main(args: Array[String]): Unit = {
+    val spark = SparkSession.builder()
+      .appName("Spark S3 Select Example")
+      .master("local[*]")
+      .getOrCreate()
+
+    // Read the source data from S3
+    val inputPath = "s3a://your-bucket/path/to/input.csv"
+    val inputData = spark.read
+      .format("csv")
+      .option("header", "true")
+      .option("inferSchema", "true")
+      .load(inputPath)
+
+    // Apply the required transformations
+    val filteredData = inputData
+      .filter(col("PSYMBL") === "")
+      .filter(!(col("PTYPE") === "O" && col("PSTYPE") === "F"))
+      .filter(col("PRECID") === "P")
+      .filter(col("PTRACE").notEqual("*"))
+      .filter(col("PSTYPE") =!= "B")
+      .filter(!(col("PEXCH").like("[A-Z]1")))
+      .filter(col("PSUBTY") =!= "S")
+      .filter(col("PQTY") >= -2147483648 && col("PQTY") <= 2147483647)
+
+    // ... Select the required columns and add new columns using withColumn()
+    // ... Write the resulting DataFrame back to S3
+
+    spark.stop()
+  }
+}
