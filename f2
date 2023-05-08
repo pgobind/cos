@@ -1,0 +1,161 @@
+ insert into T_gmi_trade_position -- HOUSE-212 (n515208) use T_gmi_trade_position as a staging area prior to insert
+        ( in_trade,
+                                id_acct_morgan,
+                                id_firm,
+                                id_ofc,
+                                id_gmi_cust,
+                                id_acc_ccy_gmi,
+                                id_class,
+                                id_exch,
+                                id_gmi_imnt,
+                                tx_dt_ctrt_yr,
+                                tx_dt_ctrt_mo,
+                tx_dt_ctrt_dd,
+                                in_put_call,
+                                pr_strk,
+                                pr_trans,
+                                pr_trans_prt,
+                                pr_clse,
+                                pr_clse_prt,
+                                in_buy_sale,
+                                am_ctrt,
+                                id_ticket,
+                                dt_trd,
+                                am_net,
+                                am_mkt,
+                                am_comm_jpm,
+                                am_comm_extn,
+                                am_gi_go,
+                                am_clr_fee,
+                                am_exch_fee,
+                                am_vat_fee,
+                                am_delta,
+                                id_exec_broker_gmi,
+                                in_gi_go,
+                                id_gigo_broker_gmi,
+                                id_type_exec,
+                                id_sys_rec,
+                                id_fac,
+                                id_cusip,
+                                id_sub_cusip,
+                                id_ou,
+                                id_ccy_iso,
+                                id_le,
+                                dt_upd_lst,
+                                am_nom,
+                                id_imnt_typ,
+                                am_orig_prem,
+                                am_prm_incp_unrl,
+                                id_gmi_trd_pos,
+                                am_ctrt_sign,
+                                id_pos_dtl,
+                                id_clr_brkr_gmi,
+                                dt_integr,
+                                dt_trd_lst,
+                am_ctgt,
+                pr_prev_clse, --NW 1.3 ADDED
+                id_sym, --NW 1.3 ADDED
+                dt_priced, --NW 1.3 ADDED
+                nm_cusip1, --NW 1.3 ADDED
+                nm_cusip2, --NW 1.3 ADDED
+                in_typ_pd, --NW 1.3 ADDED
+                am_min_mov_prt, --NW 1.3 ADDED
+                id_prod_typ, --NW 1.3 ADDED
+                am_mult, --NW 1.3 ADDED
+                tx_dt_ctrt_dd_nstd, --SBD Added 2.1
+                id_sys, -- CM 2.5
+                dt_expy--, -- 3.2 CM
+               -- dt_lst_trd -- 3.2 CM
+                                )
+                select 'TP',
+                        PACCT,
+                        '1' as PFIRM, -- 1.6 CM
+                        NULL,
+                        PACCT,
+                        PATCOM,
+                        PCLASS + PSUBCL,
+                        PEXCH,
+                        PFC,
+                        SUBSTRING(PCTYM,3,2),
+                        SUBSTRING(PCTYM,5,2),
+                        --NW 1.4 Commented Out & Replaced with below SUBSTRING(convert(char(8),PLTDAT),7,2),
+                        CASE WHEN ( PPTYPE = 'J' AND PEXCH IN ('7T', '7U') ) THEN SUBSTRING(CONVERT(CHAR(8),PEXPDT),7,2) -- NW 1.4 Added
+                        ELSE SUBSTRING(CONVERT(CHAR(8),PLTDAT),7,2) -- NW 1.4 Added
+                        END , -- NW 1.4 Added
+                        null,
+                        NULL,
+                        PTPRIC,
+                        RTRIM(LTRIM(PPRTPR)),
+                        PCLOSE,
+                        PPRTCP,
+                        PBS,
+                        CONVERT(INT,CEILING(PQTY)), -- 1.1 PG: HOUSE-473, Rounding up lot size as Endur may send half lot
+                        PCARD,
+                                convert(datetime,convert(char(8),PTDATE),101),
+                        PNET,
+                        PMKVAL,
+                        PCOMM,
+                        /*SBD REMOVED 2.7
+                         * ( SELECT TGICHG
+                            FROM IAMITHF
+                           WHERE TTRACE = IU2POSF.PTRACE
+                          AND   TFIRM = '1'
+                          AND   TRECID IN ('P') )*/0,
+                        0,
+                        PFEE1,
+                        0,
+                        0,
+                        PDELTA * PMULTF,
+                        PEXBKR,
+                        isnull(ltrim(rtrim(PGIVIO)),'FS'),
+                        CASE PGIVF# when '' then NULL ELSE PGIVF# END,
+                        substring(PCMNT1,2,1),
+                        0,
+                        '',
+                        PCUSIP,
+                        PSBCUS, -- PCUSP2 2.2 CM
+                        0,
+                        PCURSY,
+                        0,
+                        convert(datetime,convert(char(8),PSDATE),101),
+                        PMULTF * PQTY,
+                        PSTYPE,
+                        FLOOR(PGROSS),
+                        PMVARN,
+                        PTRACE,
+                        CONVERT(INT,CEILING(PQTY)), -- 1.3 PG: HOUSE-473, Rounding up lot size as Endur may send half lot
+                        '',
+                        '',
+                        @today,
+                        CASE CHAR_LENGTH(convert(varchar(10),PLTDAT)) when 8 then convert(datetime,convert(char(8),PLTDAT),101) else NULL end,
+                        round(PMULTF * PQTY,2) * PTPRIC,
+                        PPRVCP, --NW 1.3 ADDED Previous Closing Price
+                        PFC, --NW 1.3 ADDED Symbol - (Futures Code)
+                        CASE WHEN PPRCDT = 0 THEN NULL ELSE CONVERT( DATETIME, CONVERT(VARCHAR(8), PPRCDT)) END, --NW 1.3 ADDED Date Priced
+                        PSDSC1, --NW 1.3 ADDED Description 1
+                        PSDSC2, --NW 1.3 ADDED Description 2
+                        CASE WHEN PPTYPE = ' ' THEN NULL ELSE PPTYPE END, --NW 1.3 ADDED Product Type
+                        CASE WHEN PTPEDT IN ('C', 'P') AND PPTYPE NOT IN ('A', 'X','U','Q') THEN '0.01' --NW 1.3 ADDED Minimum Movement based on
+                        WHEN PTPEDT = 'X' AND PPTYPE NOT IN ('A', 'X','U','Q') THEN '1 1/8' -- Trade Price Edit Code (PTPEDT) and
+                        ELSE NULL -- Product Type (PPTYPE)
+                        END, --NW 1.3 ADDED
+                        'D', --NW 1.3 ADDED Contract Type
+                        PMULTF, --NW 1.3 ADDED Multiplier
+                        PSBCUS,--SBD added 2.1
+                        'GMI',
+                CASE CHAR_LENGTH(convert(varchar(10),PEXPDT)) when 8 then convert(datetime,convert(char(8),PEXPDT),101) else NULL end
+                -- PEXPDT, -- 3.2 CM
+               -- PLTDAT -- 3.2 CM
+        from IU2POSF --, gmi_exchange exch--SBD removed 1.2
+        where PSYMBL = '' -- FUTURE
+        AND (PTYPE <> 'O' OR PSTYPE <> 'F') -- NOT A OPTION STYLE FUTURE
+        and PRECID = 'P'
+        --and PFIRM in ('1')
+        AND (PFIRM = '1' -- 1.6 CM
+           OR LTRIM(RTRIM(PCLASS))+LTRIM(RTRIM(PSUBCL)) IN (SELECT string_1 from reference_value where ref_id='FIRM1MIG')) -- 1.6 CM
+-- and PEXCH = exch.id_exch--SBD removed 1.2
+        AND PTRACE NOT LIKE '%*%'
+        AND PSTYPE <> 'B'
+        AND PEXCH not like "[A-Z]1"
+  AND PSUBTY != 'S' -- 2.9 Dont pull CDS stuff CM
+  AND (PQTY >= -2147483648 AND PQTY <= 2147483647 )
