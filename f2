@@ -29,31 +29,102 @@ public class SparkS3Select {
                 .filter(col("PSUBTY").notEqual("S"))
                 .filter(col("PQTY").geq(-2147483648).and(col("PQTY").leq(2147483647)));
 
-        // Select the required columns and add new columns using withColumn()
-        Dataset<Row> resultData = filteredData.select(
-                lit("TP").as("in_trade"),
-                col("PACCT").as("id_acct_morgan"),
-                lit("1").as("id_firm"),
-                lit(null).as("id_ofc"),
-                col("PACCT").as("id_gmi_cust"),
-                col("PATCOM").as("id_acc_ccy_gmi"),
-                concat(col("PCLASS"), col("PSUBCL")).as("id_class"),
-                col("PEXCH").as("id_exch"),
-                col("PFC").as("id_gmi_imnt"),
-                substring(col("PCTYM"), 3, 2).as("tx_dt_ctrt_yr"),
-                substring(col("PCTYM"), 5, 2).as("tx_dt_ctrt_mo"),
-                when(col("PPTYPE").equalTo("J").and(col("PEXCH").isin("7T", "7U")), substring(to_date(col("PEXPDT"), "yyyyMMdd"), 7, 2))
-                        .otherwise(substring(to_date(col("PLTDAT"), "yyyyMMdd"), 7, 2)).as("tx_dt_ctrt_dd"),
-                lit(null).as("in_put_call"),
-                lit(null).as("pr_strk"),
-                col("PTPRIC").as("pr_trans"),
-                rtrim(ltrim(col("PPRTPR"))).as("pr_trans_prt"),
-                col("PCLOSE").as("pr_clse"),
-                col("PPRTCP").as("pr_clse_prt"),
-                col("PBS").as("in_buy_sale"),
-                ceil(col("PQTY")).cast("int").as("am_ctrt"),
-                col("PCARD").as("id_ticket"),
-                to_date(col("PTDATE"), "yyyyMMdd").as("dt_trd"),
-                col("PNET").as("am_net"),
-                col("PMKVAL").as("am_mkt"),
-                col("
+       import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import static org.apache.spark.sql.functions.*;
+
+public class SparkSQLExample {
+    public static void main(String[] args) {
+        SparkSession spark = SparkSession.builder()
+                .appName("Spark SQL Example")
+                .master("local[*]")
+                .getOrCreate();
+
+        // Read the source data from S3
+        String inputPath = "s3a://your-bucket/path/to/input.csv";
+        Dataset<Row> inputData = spark.read()
+                .format("csv")
+                .option("header", "true")
+                .option("inferSchema", "true")
+                .load(inputPath);
+
+        // Apply the required transformations
+        Dataset<Row> resultData = inputData
+                .withColumn("in_trade", lit("TP"))
+                .withColumn("id_acct_morgan", col("PACCT"))
+                .withColumn("id_firm", lit("1"))
+                .withColumn("id_ofc", lit(null))
+                .withColumn("id_gmi_cust", col("PACCT"))
+                .withColumn("id_acc_ccy_gmi", col("PATCOM"))
+                .withColumn("id_class", concat(col("PCLASS"), col("PSUBCL")))
+                .withColumn("id_exch", col("PEXCH"))
+                .withColumn("id_gmi_imnt", col("PFC"))
+                .withColumn("tx_dt_ctrt_yr", substring(col("PCTYM"), 3, 2))
+                .withColumn("tx_dt_ctrt_mo", substring(col("PCTYM"), 5, 2))
+                .withColumn("tx_dt_ctrt_dd", when(col("PPTYPE").equalTo("J").and(col("PEXCH").isin("7T", "7U")),
+                        substring(to_date(col("PEXPDT"), "yyyyMMdd"), 7, 2))
+                        .otherwise(substring(to_date(col("PLTDAT"), "yyyyMMdd"), 7, 2)))
+                .withColumn("in_put_call", lit(null))
+                .withColumn("pr_strk", lit(null))
+                .withColumn("pr_trans", col("PTPRIC"))
+                .withColumn("pr_trans_prt", rtrim(ltrim(col("PPRTPR"))))
+                .withColumn("pr_clse", col("PCLOSE"))
+                .withColumn("pr_clse_prt", col("PPRTCP"))
+                .withColumn("in_buy_sale", col("PBS"))
+                .withColumn("am_ctrt", ceil(col("PQTY")).cast("int"))
+                .withColumn("id_ticket", col("PCARD"))
+                .withColumn("dt_trd", to_date(col("PTDATE"), "yyyyMMdd"))
+                .withColumn("am_net", col("PNET"))
+                .withColumn("am_mkt", col("PMKVAL"))
+                .withColumn("am_comm_jpm", col("PCOMM"))
+                .withColumn("am_comm_extn", lit(0))
+                .withColumn("am_gi_go", lit(0))
+                .withColumn("am_clr_fee", col("PFEE1"))
+                .withColumn("am_exch_fee", lit(0))
+                .withColumn("am_vat_fee", lit(0))
+                .withColumn("am_delta", col("PDELTA").multiply(col("PMULTF")))
+                .withColumn("id_exec_broker_gmi", col("PEXBKR
+                .withColumn("in_gi_go", when(col("PGIVIO").isNull(), lit("FS")).otherwise(ltrim(rtrim(col("PGIVIO")))))
+                .withColumn("id_gigo_broker_gmi", when(col("PGIVF#").equalTo(""), lit(null)).otherwise(col("PGIVF#")))
+                .withColumn("id_type_exec", substring(col("PCMNT1"), 2, 1))
+                .withColumn("id_sys_rec", lit(0))
+                .withColumn("id_fac", lit(""))
+                .withColumn("id_cusip", col("PCUSIP"))
+                .withColumn("id_sub_cusip", col("PSBCUS"))
+                .withColumn("id_ou", lit(0))
+                .withColumn("id_ccy_iso", col("PCURSY"))
+                .withColumn("id_le", lit(0))
+                .withColumn("dt_upd_lst", to_date(col("PSDATE"), "yyyyMMdd"))
+                .withColumn("am_nom", col("PMULTF").multiply(col("PQTY")))
+                .withColumn("id_imnt_typ", col("PSTYPE"))
+                .withColumn("am_orig_prem", floor(col("PGROSS")))
+                .withColumn("am_prm_incp_unrl", col("PMVARN"))
+                .withColumn("id_gmi_trd_pos", col("PTRACE"))
+                .withColumn("am_ctrt_sign", ceil(col("PQTY")).cast("int"))
+                .withColumn("id_pos_dtl", lit(""))
+                .withColumn("id_clr_brkr_gmi", lit(""))
+                .withColumn("dt_integr", current_date())
+                .withColumn("dt_trd_lst", when(length(col("PLTDAT").cast("string")).equalTo(8),
+                        to_date(col("PLTDAT"), "yyyyMMdd")).otherwise(lit(null)))
+                .withColumn("am_ctgt", col("PMULTF").multiply(col("PQTY")).multiply(col("PTPRIC")))
+                .withColumn("pr_prev_clse", col("PPRVCP"))
+                .withColumn("id_sym", col("PFC"))
+                .withColumn("dt_priced", when(col("PPRCDT").equalTo(0), lit(null)).otherwise(to_date(col("PPRCDT"), "yyyyMMdd")))
+                .withColumn("nm_cusip1", col("PSDSC1"))
+                .withColumn("nm_cusip2", col("PSDSC2"))
+                .withColumn("in_typ_pd", when(col("PPTYPE").equalTo(" "), lit(null)).otherwise(col("PPTYPE")))
+                .withColumn("am_min_mov_prt", when(col("PTPEDT").isin("C", "P").and(col("PPTYPE").notEqual("A").and(col("PPTYPE").notEqual("X").and(col("PPTYPE").notEqual("U").and(col("PPTYPE").notEqual("Q"))))), lit("0.01"))
+                        .when(col("PTPEDT").equalTo("X").and(col("PPTYPE").notEqual("A").and(col("PPTYPE").notEqual("X").and(col("PPTYPE").notEqual("U").and(col("PPTYPE").notEqual("Q"))))), lit("1 1/8"))
+                        .otherwise(lit(null)))
+                .withColumn("id_prod_typ", lit("D"))
+                .withColumn("am_mult", col("PMULTF"))
+                .withColumn("tx_dt_ctrt_dd_nstd", col("PSBCUS"))
+                .withColumn("id_sys", lit("GMI"))
+                .withColumn("dt_expy", when(length(col("PEXPDT").cast("string")).equalTo(8), 
+                        to_date(col("PEXPDT"), "yyyyMMdd")).otherwise(lit(null)));
+
+        // Write the transformed data to the output path
+        
+
+
