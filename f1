@@ -47,3 +47,150 @@ CMD java $JAVA_OPTS -cp /app/ org.springframework.boot.loader.JarLauncher
 
 
 {"@timestamp":"2023-05-05T13:32:07.834Z","@version":"1","message":"Application run failed","logger_name":"org.springframework.boot.SpringApplication","thread_name":"main","level":"ERROR","level_value":40000,"stack_trace":"org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'encoreServiceApplication': Unsatisfied dependency expressed through field 'hudiService': Error creating bean with name 'hudiService' defined in URL [jar:file:/app/BOOT-INF/lib/encore-service-rest-develop.118.jar!/net/jpmchase/encore/service/hudi/HudiService.class]: Failed to instantiate [net.jpmchase.encore.service.hudi.HudiService]: Constructor threw exception\n\tat org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:712)\n\tat org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:692)\n\tat org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:133)\n\tat org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:481)\n\tat org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1397)\n\tat org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:598)\n\tat org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:521)\n\tat org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:326)\n\tat org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)\n\tat org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:324)\n\tat org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:200)\n\tat org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:961)\n\tat org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:915)\n\tat org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:584)\n\tat org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)\n\tat org.springframework.boot.SpringApplication.refresh(SpringApplication.java:730)\n\tat org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:432)\n\tat org.springframework.boot.SpringApplication.run(SpringApplication.java:308)\n\tat org.springframework.boot.SpringApplication.run(SpringApplication.java:1302)\n\tat org.springframework.boot.SpringApplication.run(SpringApplication.java:1291)\n\tat net.jpmchase.encore.EncoreServiceApplication.main(EncoreServiceApplication.java:39)\n\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:568)\n\tat org.springframework.boot.loader.MainMethodRunner.run(MainMethodRunner.java:49)\n\tat org.springframework.boot.loader.Launcher.launch(Launcher.java:95)\n\tat org.springframework.boot.loader.Launcher.launch(Launcher.java:58)\n\tat org.springframework.boot.loader.JarLauncher.main(JarLauncher.java:65)\nCaused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'hudiService' defined in URL [jar:file:/app/BOOT-INF/lib/encore-service-rest-develop.118.jar!/net/jpmchase/encore/service/hudi/HudiService.class]: Failed to instantiate [net.jpmchase.encore.service.hudi.HudiService]: Constructor threw exception\n\tat org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateBean(AbstractAutowireCapableBeanFactory.java:1306)\n\tat org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1198)\n\tat org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:561)\n\tat org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:521)\n\tat org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:326)\n\tat org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)\n\tat org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:324)\n\tat org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:200)\n\tat org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:254)\n\tat org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1405)\n\tat org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1325)\n\tat org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:709)\n\t... 28 common frames omitted\nCaused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [net.jpmchase.encore.service.hudi.HudiService]: Constructor threw exception\n\tat org.springframework.beans.BeanUtils.instantiateClass(BeanUtils.java:223)\n\tat org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:87)\n\tat org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateBean(AbstractAutowireCapableBeanFactory.java:1300)\n\t... 39 common frames omitted\nCaused by: java.lang.ExceptionInInitializerError: null\n\tat org.apache.spark.unsafe.array.ByteArrayMethods.<clinit>(ByteArrayMethods.java:54)\n\tat org.apache.spark.internal.config.package$.<init>(package.scala:1095)\n\tat org.apache.spark.internal.config.package$.<clinit>(package.scala)\n\tat org.apache.spark.SparkConf$.<init>(SparkConf.scala:654)\n\tat org.apache.spark.SparkConf$.<clinit>(SparkConf.scala)\n\tat org.apache.spark.SparkConf.set(SparkConf.scala:94)\n\tat org.apache.spark.SparkConf.set(SparkConf.scala:83)\n\tat org.apache.spark.sql.SparkSession$Builder.$anonfun$getOrCreate$1(SparkSession.scala:916)\n\tat scala.collection.mutable.HashMap.$anonfun$foreach$1(HashMap.scala:149)\n\tat scala.collection.mutable.HashTable.foreachEntry(HashTable.scala:237)\n\tat scala.collection.mutable.HashTable.foreachEntry$(HashTable.scala:230)\n\tat scala.collection.mutable.HashMap.foreachEntry(HashMap.scala:44)\n\tat scala.collection.mutable.HashMap.foreach(HashMap.scala:149)\n\tat org.apache.spark.sql.SparkSession$Builder.getOrCreate(SparkSession.scala:916)\n\tat net.jpmchase.encore.service.hudi.HudiService.<init>(HudiService.java:37)\n\tat java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)\n\tat java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)\n\tat java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)\n\tat java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:499)\n\tat java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:480)\n\tat org.springframework.beans.BeanUtils.instantiateClass(BeanUtils.java:197)\n\t... 41 common frames omitted\nCaused by: java.lang.reflect.InaccessibleObjectException: Unable to make private java.nio.DirectByteBuffer(long,int) accessible: module java.base does not \"opens java.nio\" to unnamed module @c0c2f8d\n\tat java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(AccessibleObject.java:354)\n\tat java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(AccessibleObject.java:297)\n\tat java.base/java.lang.reflect.Constructor.checkCanSetAccessible(Constructor.java:188)\n\tat java.base/java.lang.reflect.Constructor.setAccessible(Constructor.java:181)\n\tat org.apache.spark.unsafe.Platform.<clinit>(Platform.java:56)\n\t... 62 common frames omitted\n"}
+
+
+
+
+
+in_trade,
+                                id_firm,
+                                id_ofc,
+                                id_gmi_cust,
+                                id_acc_ccy_gmi,
+                                id_class,
+                                id_exch,
+                                id_gmi_imnt,
+                                tx_dt_ctrt_yr,
+                                tx_dt_ctrt_mo,
+                tx_dt_ctrt_dd,
+                                in_put_call,
+                                pr_strk,
+                                pr_trans,
+                                pr_trans_prt,
+                                pr_clse,
+                                pr_clse_prt,
+                                in_buy_sale,
+                                am_ctrt,
+                                id_ticket,
+                                dt_trd,
+                                am_net,
+                                am_mkt,
+                                am_comm_jpm,
+                                am_comm_extn,
+                                am_gi_go,
+                                am_clr_fee,
+                                am_exch_fee,
+                                am_vat_fee,
+                                am_delta,
+                                id_exec_broker_gmi,
+                                in_gi_go,
+                                id_gigo_broker_gmi,
+                                id_type_exec,
+                                id_sys_rec,
+                                id_fac,
+                                id_cusip,
+                                id_sub_cusip,
+                                id_ou,
+                                id_ccy_iso,
+                                id_le,
+                                am_var_marg_prm,
+                                am_nom,
+                                id_imnt_typ,
+                                am_orig_prem,
+                                am_prm_incp_unrl,
+                                id_gmi_trd_pos,
+                                am_ctrt_sign,
+                                id_pos_dtl,
+                                id_clr_brkr_gmi,
+                                dt_integr,
+                                dt_trd_lst,
+                                dt_upd_lst,
+                tx_dt_ctrt_dd_nstd,
+                id_sys 
+                                )
+                select CASE when (PRECID in ('P','E')) then 'TL' else 'TX' end, 
+                                '1' as PFIRM, 
+                                NULL,
+                                ISNULL(PACCT,''), 
+                                PATCOM,
+                                PCLASS + PSUBCL,
+                                ISNULL(PEXCH,''), 
+                                PFC,
+                                ISNULL(SUBSTRING(PCTYM,3,2),''), 
+                                ISNULL(SUBSTRING(PCTYM,5,2),''), 
+                CASE WHEN ( PPTYPE = 'J' AND PEXCH IN ('7T', '7U') ) THEN SUBSTRING(CONVERT(CHAR(8),PEXPDT),7,2) 
+                ELSE SUBSTRING(CONVERT(CHAR(8),PLTDAT),7,2) 
+                END , 
+                                NULL,
+                                NULL,
+                                PTPRIC,
+                                RTRIM(LTRIM(PPRTPR)),
+                                PCLOSE,
+                                PPRTCP,
+                                PBS,
+                                CONVERT(INT,PQTY),
+                                PCARD,
+                                convert(datetime,convert(char(8),PTDATE),101),
+                                CASE WHEN PFC = 'TE' AND PEXCH = '15' AND PRECID = 'P' THEN ((100000.0/(
+                                (
+                                    (PTPRIC/100.0/360.0)
+                                 * 28.0)
+                               + 1.0)
+                               ) - (100000.0/(
+                                (
+                                    (PCLOSE/100.0/360.0)
+                                 * 28.0)
+                               + 1.0)
+                               )
+                                )* PQTY
+                        WHEN PGROSS = 0 THEN PQTY*PMULTF*PTPRIC
+                        ELSE PGROSS END,
+                                PMKVAL,
+                PCOMM,
+                0,
+                                /*(SELECT TGICHG
+                   FROM IAMITHF
+                  WHERE TTRACE = IAPASFF.PTRACE
+                  AND   TFIRM = '1'
+                  AND   TRECID IN ('X', 'P')),*/ -- 3.1 DHC
+                                0,
+                                PFEE1,
+                                0,
+                                0,
+                                0,
+                                PEXBKR,
+                                isnull(ltrim(rtrim(PGIVIO)),'FS'),
+                                CASE PGIVF# when '' then NULL else PGIVF# end,
+                                substring(PCMNT2,2,1),
+                                0,
+                                '',
+                                PCUSIP,
+                                PCUSP2,
+                                0,
+                                ISNULL(PCURSY,''),
+                                0,
+                                PMVARN,
+                                PMULTF * PQTY,
+                                ISNULL(PSTYPE,''), 
+                                PGROSS,
+                                PMVARN,
+                                PTRACE,
+                                CONVERT(INT,PQTY),
+                                substring(PCMNT1,2,1),
+                                '',
+                                @today,
+                                isnull(CASE CHAR_LENGTH(convert(varchar(10),PLTDAT)) WHEN 8 THEN convert(datetime,convert(char(8),PLTDAT),101) ELSE NULL END,'01/01/01'),
+                @last_refresh,
+                PSBCUS,
+                "GMI" 
+        from IAPASFF 
+        where PSYMBL = '' 
+        AND (PTYPE <> 'O' OR PSTYPE <> 'F') 
+        and PRECID in ('X', 'P', 'E') 
+        AND (PFIRM = '1' 
+           OR LTRIM(RTRIM(PCLASS))+LTRIM(RTRIM(PSUBCL)) IN (SELECT string_1 from reference_value where ref_id='FIRM1MIG')) 
+        AND PTRACE NOT LIKE '%*%'
+         AND PEXCH not like "[A-Z]1"
+        AND PEXCH+PFC not in (select f.id_exch + f.id_gmi_imnt from floating_tick_reference f)
+           AND PSUBTY != 'S' 
+           AND (PQTY >= -2147483648 AND PQTY <= 2147483647 )
