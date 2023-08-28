@@ -1,6 +1,6 @@
 public class SimpleEncryption {
     public static void main(String[] args) {
-        String originalText = "Hello, World!";
+        String originalText = "Hello, World! 123";
         int shift = 3;
 
         // Encrypt the original string
@@ -12,7 +12,7 @@ public class SimpleEncryption {
         System.out.println("Decrypted text: " + decryptedText);
     }
 
-    // Encrypt a string using a simple Caesar cipher with a given shift
+    // Encrypt a string using a custom cipher with a given shift
     public static String encrypt(String text, int shift) {
         StringBuilder encrypted = new StringBuilder();
 
@@ -20,6 +20,10 @@ public class SimpleEncryption {
             if (Character.isAlphabetic(c)) {
                 char base = Character.isLowerCase(c) ? 'a' : 'A';
                 encrypted.append((char) ((c - base + shift) % 26 + base));
+            } else if (Character.isDigit(c)) {
+                int digit = (c - '0' + shift) % 10;
+                encrypted.append((char) (digit + 'A'));  // Map to letter starting from 'A'
+                encrypted.append((char) (digit + 'a'));  // Map to letter starting from 'a'
             } else {
                 encrypted.append(c);
             }
@@ -28,16 +32,27 @@ public class SimpleEncryption {
         return encrypted.toString();
     }
 
-    // Decrypt a string using a simple Caesar cipher with a given shift
+    // Decrypt a string using a custom cipher with a given shift
     public static String decrypt(String text, int shift) {
         StringBuilder decrypted = new StringBuilder();
-
-        for (char c : text.toCharArray()) {
+        
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            
             if (Character.isAlphabetic(c)) {
                 char base = Character.isLowerCase(c) ? 'a' : 'A';
                 decrypted.append((char) ((c - base - shift + 26) % 26 + base));
+            } else if (Character.isDigit(c)) {
+                decrypted.append((char) ((c - '0' - shift + 10) % 10 + '0'));
             } else {
-                decrypted.append(c);
+                // Check if it's a digit encoding, starting from 'A' and followed by a character starting from 'a'
+                if (i < text.length() - 1 && c >= 'A' && c <= 'J' && text.charAt(i+1) >= 'a' && text.charAt(i+1) <= 'j') {
+                    int digit = c - 'A';
+                    decrypted.append((char) ((digit - shift + 10) % 10 + '0'));
+                    i++;  // Skip the next character as it's part of the encoded digit
+                } else {
+                    decrypted.append(c);
+                }
             }
         }
 
