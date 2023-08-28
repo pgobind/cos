@@ -21,8 +21,7 @@ public class SimpleEncryption {
                 char base = Character.isLowerCase(c) ? 'a' : 'A';
                 encrypted.append((char) ((c - base + shift) % 26 + base));
             } else if (Character.isDigit(c)) {
-                int digit = (c - '0' + shift) % 10;
-                encrypted.append("A" + digit);  // e.g., '0' becomes "A0", '1' becomes "A1", etc.
+                encrypted.append("A" + c + "B");  // e.g., '0' becomes "A0B", '1' becomes "A1B", etc.
             } else {
                 encrypted.append(c);
             }
@@ -41,10 +40,9 @@ public class SimpleEncryption {
             if (Character.isAlphabetic(c)) {
                 char base = Character.isLowerCase(c) ? 'a' : 'A';
                 decrypted.append((char) ((c - base - shift + 26) % 26 + base));
-            } else if (i < text.length() - 1 && text.substring(i, i + 2).startsWith("A")) {
-                int digit = Integer.parseInt(String.valueOf(text.charAt(i + 1)));
-                decrypted.append((char) ((digit - shift + 10) % 10 + '0'));
-                i++;  // skip the next character
+            } else if (i < text.length() - 2 && text.substring(i, i + 3).startsWith("A") && text.substring(i, i + 3).endsWith("B")) {
+                decrypted.append(text.charAt(i + 1));
+                i += 2;  // skip the next two characters 'A' and 'B'
             } else {
                 decrypted.append(c);
             }
