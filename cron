@@ -1,0 +1,83 @@
+@Entity
+public class CronConfig {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    private String cronExpression;
+    private String jobName; // A unique name/identifier for each cron job
+    
+    // getters, setters, etc.
+}
+
+
+@Service
+public class DynamicScheduler {
+
+    @Autowired
+    private TaskScheduler taskScheduler;
+
+    @Autowired
+    private S3CheckerTask s3CheckerTask;
+
+    @Autowired
+    private CronConfigRepository cronConfigRepository;
+
+    private Map<String, ScheduledFuture<?>> tasks = new ConcurrentHashMap<>();
+
+    public void scheduleTask(String jobName) {
+        // Cancel the current task if exists
+        ScheduledFuture<?> currentTask = tasks.get(jobName);
+        if (currentTask != null) {
+            currentTask.cancel(true);
+        }
+
+        // Fetch the cron expression from the database
+        CronConfig config = cronConfigRepository.findByJobName(jobName)
+                .orElseThrow(() -> new RuntimeException("No cron config found for job name: " + jobName));
+
+        CronTrigger cronTrigger = new CronTrigger(config.getCronExpression());
+
+        // Schedule the new task
+        ScheduledFuture<?> newTask = taskScheduler.schedule(() -> s3CheckerTask.run(jobName), cronTrigger);
+        tasks.put(jobName, newTask);
+    }
+}
+
+
+@RestController
+@RequestMapping("/api/cron")
+public class CronConfigController {
+
+    @Autowired
+    private CronConfigRepository cronConfigRepository;
+
+    @Autowired
+    private DynamicScheduler dynamicScheduler;
+
+    @PutMapping("/{jobName}")
+    public CronConfig updateCronConfig(@PathVariable String jobName, @RequestBody CronConfig updatedConfig) {
+        CronConfig config = cronConfigRepository.findByJobName(jobName)
+                .orElseThrow(() -> new RuntimeException("No cron config found for job name: " + jobName));
+
+        config.setCronExpression(updatedConfig.getCronExpression());
+        cronConfigRepository.save(config);
+
+        // Reschedule the task after updating
+        dynamicScheduler.scheduleTask(jobName);
+
+        return config;
+    }
+}
+
+
+@Bean
+public ApplicationRunner scheduleRunner(DynamicScheduler dynamicScheduler, CronConfigRepository repository) {
+    return args -> {
+        List<CronConfig> allConfigs = repository.findAll();
+        for (CronConfig config : allConfigs) {
+            dynamicScheduler.scheduleTask(config.getJobName());
+        }
+    };
+}
