@@ -110,3 +110,52 @@ public class SparkSubsetExample {
     }
 }
 
+
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import static org.apache.spark.sql.functions.*;
+
+public class SparkSubsetExample {
+
+    private static SparkSession spark;
+
+    public static Dataset<Row> getExactMatch(Dataset<Row> ds1, String aVal, int target) {
+        List<Row> ds1RowsForA = ds1.filter(col("a").equalTo(aVal)).collectAsList();
+        List<Row> exactMatchRows = equalSubsetSum(ds1RowsForA, target);
+        
+        if (exactMatchRows != null && !exactMatchRows.isEmpty()) {
+            return spark.createDataFrame(exactMatchRows, ds1.schema());
+        }
+        
+        return null;
+    }
+
+    public static void main(String[] args) {
+        spark = SparkSession.builder()
+                .appName("SubsetExample")
+                .master("local[1]")
+                .getOrCreate();
+
+        // Sample Datasets ... (same as before)
+
+        // For each unique value in ds2, we check for an exact match
+        Dataset<Row> ds2UniqueVals = ds2.select("a").distinct();
+        List<Row> uniqueValsList = ds2UniqueVals.collectAsList();
+
+        for (Row uniqueRow : uniqueValsList) {
+            String aVal = uniqueRow.getAs("a");
+            int targetSum = ds2.filter(col("a").equalTo(aVal)).first().<Integer>getAs("sum");
+            
+            Dataset<Row> exactMatchResult = getExactMatch(ds1, aVal, targetSum);
+            
+            if (exactMatchResult != null) {
+                exactMatchResult.show();
+            }
+        }
+        
+        spark.stop();
+    }
+}
+
+
