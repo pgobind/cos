@@ -1,0 +1,54 @@
+import java.util.*;
+
+public class TestCaseExample {
+    
+    public static void main(String[] args) {
+        // Define dummy ds1 and ds2 datasets
+        List<Map<String, Object>> ds1 = new ArrayList<>(Arrays.asList(
+                createRow("ID1", "USD", 100, 7, "Unknown"),
+                createRow("ID1", "USD", 100, 3, "Unknown"),
+                createRow("ID1", "USD", 100, 2, "Unknown"),
+                createRow("ID2", "EUR", 200, 5, "Unknown"),
+                createRow("ID2", "EUR", 200, 6, "Unknown"),
+                createRow("ID3", "GBP", 300, 1, "Unknown")
+        ));
+
+        List<Map<String, Object>> ds2 = new ArrayList<>(Arrays.asList(
+                createTargetRow("ID1", "USD", 100, 10, 0.5, "NotChecked", "Pending"),
+                createTargetRow("ID2", "EUR", 200, 12, 0.5, "NotChecked", "Pending"),
+                createTargetRow("ID3", "GBP", 300, 3, 0.5, "NotChecked", "Pending")
+        ));
+
+        // Call processDatasets function (assuming you've refactored the logic to handle list-based data)
+        //processDatasets(ds1, ds2);
+
+        // Print updated datasets
+        System.out.println("Updated ds1:");
+        ds1.forEach(System.out::println);
+
+        System.out.println("\nUpdated ds2:");
+        ds2.forEach(System.out::println);
+    }
+
+    private static Map<String, Object> createRow(String instrumentID, String id_cccy_iso, int am_pl_orig, int am_pl_new, String AR) {
+        Map<String, Object> row = new HashMap<>();
+        row.put("instrumentID", instrumentID);
+        row.put("id_cccy_iso", id_cccy_iso);
+        row.put("am_pl_orig", am_pl_orig);
+        row.put("am_pl_new", am_pl_new);
+        row.put("AR", AR);
+        return row;
+    }
+
+    private static Map<String, Object> createTargetRow(String instrumentID, String id_cccy_iso, int am_pl_orig, int calculated_break, double am_tolerance, String od_status, String secondary_status) {
+        Map<String, Object> row = new HashMap<>();
+        row.put("instrumentID", instrumentID);
+        row.put("id_cccy_iso", id_cccy_iso);
+        row.put("am_pl_orig", am_pl_orig);
+        row.put("calculated_break", calculated_break);
+        row.put("am_tolerance", am_tolerance);
+        row.put("od_status", od_status);
+        row.put("secondary_status", secondary_status);
+        return row;
+    }
+}
