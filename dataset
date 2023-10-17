@@ -71,3 +71,42 @@ public class SparkSubsetSolver {
         return result;
     }
 }
+
+
+
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.Encoders;
+import static org.apache.spark.sql.functions.*;
+
+public class SparkSubsetExample {
+    public static void main(String[] args) {
+        SparkSession spark = SparkSession.builder()
+                .appName("SubsetExample")
+                .master("local[1]")
+                .getOrCreate();
+
+        // Sample Datasets
+        List<Row> data1 = Arrays.asList(
+                RowFactory.create("A", 10),
+                RowFactory.create("A", 15),
+                RowFactory.create("A", 5),
+                RowFactory.create("B", 20),
+                RowFactory.create("B", 5)
+        );
+
+        List<Row> data2 = Arrays.asList(
+                RowFactory.create("A", 30),  // Exact match for A in ds1: 10 + 15 + 5 = 30
+                RowFactory.create("B", 15)   // Closest match for B in ds1: 5 + 10 (not present, but assume closest)
+        );
+
+        Dataset<Row> ds1 = spark.createDataFrame(data1, new StructType().add("a", "string").add("col1", "integer"));
+        Dataset<Row> ds2 = spark.createDataFrame(data2, new StructType().add("a", "string").add("sum", "integer"));
+
+        // ... (your matching logic)
+
+        spark.stop();
+    }
+}
+
