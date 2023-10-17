@@ -1,54 +1,60 @@
-import java.util.*;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.StructField;
+import org.apache.spark.sql.types.StructType;
+
+import static org.apache.spark.sql.functions.col;
 
 public class TestCaseExample {
-    
+
     public static void main(String[] args) {
-        // Define dummy ds1 and ds2 datasets
-        List<Map<String, Object>> ds1 = new ArrayList<>(Arrays.asList(
-                createRow("ID1", "USD", 100, 7, "Unknown"),
-                createRow("ID1", "USD", 100, 3, "Unknown"),
-                createRow("ID1", "USD", 100, 2, "Unknown"),
-                createRow("ID2", "EUR", 200, 5, "Unknown"),
-                createRow("ID2", "EUR", 200, 6, "Unknown"),
-                createRow("ID3", "GBP", 300, 1, "Unknown")
-        ));
+        SparkSession spark = SparkSession.builder()
+                .appName("TestCaseExample")
+                .master("local")
+                .getOrCreate();
 
-        List<Map<String, Object>> ds2 = new ArrayList<>(Arrays.asList(
-                createTargetRow("ID1", "USD", 100, 10, 0.5, "NotChecked", "Pending"),
-                createTargetRow("ID2", "EUR", 200, 12, 0.5, "NotChecked", "Pending"),
-                createTargetRow("ID3", "GBP", 300, 3, 0.5, "NotChecked", "Pending")
-        ));
+        StructType schema = new StructType(new StructField[]{
+                DataTypes.createStructField("instrumentID", DataTypes.StringType, false),
+                DataTypes.createStructField("id_cccy_iso", DataTypes.StringType, false),
+                DataTypes.createStructField("am_pl_orig", DataTypes.IntegerType, false),
+                DataTypes.createStructField("am_pl_new", DataTypes.DoubleType, false),
+                DataTypes.createStructField("AR", DataTypes.StringType, false)
+        });
 
-        // Call processDatasets function (assuming you've refactored the logic to handle list-based data)
-        //processDatasets(ds1, ds2);
+        Dataset<Row> ds1 = spark.createDataFrame(Arrays.asList(
+                RowFactory.create("ID1", "USD", 100, 7.5, "A"),
+                RowFactory.create("ID1", "USD", 100, 3.2, "A"),
+                RowFactory.create("ID1", "USD", 100, 2.3, "B"),
+                RowFactory.create("ID2", "EUR", 200, 5.4, "B"),
+                RowFactory.create("ID2", "EUR", 200, 6.1, "A"),
+                RowFactory.create("ID3", "GBP", 300, 1.8, "B")
+        ), schema);
+
+        StructType targetSchema = new StructType(new StructField[]{
+                DataTypes.createStructField("instrumentID", DataTypes.StringType, false),
+                DataTypes.createStructField("id_cccy_iso", DataTypes.StringType, false),
+                DataTypes.createStructField("am_pl_orig", DataTypes.IntegerType, false),
+                DataTypes.createStructField("calculated_break", DataTypes.DoubleType, false),
+                DataTypes.createStructField("am_tolerance", DataTypes.DoubleType, false),
+                DataTypes.createStructField("od_status", DataTypes.StringType, false),
+                DataTypes.createStructField("secondary_status", DataTypes.StringType, false)
+        });
+
+        Dataset<Row> ds2 = spark.createDataFrame(Arrays.asList(
+                RowFactory.create("ID1", "USD", 100, 10.5, 0.5, "NotChecked", "Pending"),
+                RowFactory.create("ID2", "EUR", 200, 12.4, 0.5, "NotChecked", "Pending"),
+                RowFactory.create("ID3", "GBP", 300, 3.2, 0.5, "NotChecked", "Pending")
+        ), targetSchema);
+
+        // Call processDatasets function
+        // processDatasets(ds1, ds2);
 
         // Print updated datasets
-        System.out.println("Updated ds1:");
-        ds1.forEach(System.out::println);
+        ds1.show();
+        ds2.show();
 
-        System.out.println("\nUpdated ds2:");
-        ds2.forEach(System.out::println);
-    }
-
-    private static Map<String, Object> createRow(String instrumentID, String id_cccy_iso, int am_pl_orig, int am_pl_new, String AR) {
-        Map<String, Object> row = new HashMap<>();
-        row.put("instrumentID", instrumentID);
-        row.put("id_cccy_iso", id_cccy_iso);
-        row.put("am_pl_orig", am_pl_orig);
-        row.put("am_pl_new", am_pl_new);
-        row.put("AR", AR);
-        return row;
-    }
-
-    private static Map<String, Object> createTargetRow(String instrumentID, String id_cccy_iso, int am_pl_orig, int calculated_break, double am_tolerance, String od_status, String secondary_status) {
-        Map<String, Object> row = new HashMap<>();
-        row.put("instrumentID", instrumentID);
-        row.put("id_cccy_iso", id_cccy_iso);
-        row.put("am_pl_orig", am_pl_orig);
-        row.put("calculated_break", calculated_break);
-        row.put("am_tolerance", am_tolerance);
-        row.put("od_status", od_status);
-        row.put("secondary_status", secondary_status);
-        return row;
+        spark.stop();
     }
 }
