@@ -70,22 +70,37 @@ public class DataSetProcessor {
 
     public static void processDatasets(Dataset<Row> ds1, Dataset<Row> ds2) {
         for (Row row2 : ds2.collectAsList()) {
-            List<Row> matchingRowsForA = ds1.filter(ds1.col("a").equalTo(row2.getAs("a"))).collectAsList();
+            List<Row> matchingRowsForKeys = ds1.filter(ds1.col("instrumentID").equalTo(row2.getAs("instrumentID"))
+                                             .and(ds1.col("id_cccy_iso").equalTo(row2.getAs("id_cccy_iso")))
+                                             .and(ds1.col("am_pl_orig").equalTo(row2.getAs("am_pl_orig"))))
+                                             .collectAsList();
             
-            List<Integer> indices = exactSubsetIndices(matchingRowsForA, row2.<Integer>getAs("calculated_break"));
+            List<Integer> indices = exactSubsetIndices(matchingRowsForKeys, row2.<Integer>getAs("calculated_break"));
             
             if (indices != null) {
                 // Exact match logic
-                ds2 = ds2.withColumn("calculated_break", when(ds2.col("a").equalTo(row2.getAs("a")), 0).otherwise(ds2.col("calculated_break")))
-                         .withColumn("secondary_status", when(ds2.col("a").equalTo(row2.getAs("a")), "clear").otherwise(ds2.col("secondary_status")));
+                ds2 = ds2.withColumn("calculated_break", when(ds2.col("instrumentID").equalTo(row2.getAs("instrumentID"))
+                                                              .and(ds2.col("id_cccy_iso").equalTo(row2.getAs("id_cccy_iso")))
+                                                              .and(ds2.col("am_pl_orig").equalTo(row2.getAs("am_pl_orig"))), 0)
+                                                         .otherwise(ds2.col("calculated_break")))
+                         .withColumn("secondary_status", when(ds2.col("instrumentID").equalTo(row2.getAs("instrumentID"))
+                                                               .and(ds2.col("id_cccy_iso").equalTo(row2.getAs("id_cccy_iso")))
+                                                               .and(ds2.col("am_pl_orig").equalTo(row2.getAs("am_pl_orig"))), "clear")
+                                                          .otherwise(ds2.col("secondary_status")));
             } else {
                 // Handle the tolerance condition
                 double tolerance = row2.<Double>getAs("am_tolerance");
-                indices = closestSubsetIndices(matchingRowsForA, row2.<Integer>getAs("calculated_break"), tolerance);
+                indices = closestSubsetIndices(matchingRowsForKeys, row2.<Integer>getAs("calculated_break"), tolerance);
                 
                 if (indices != null) {
-                    ds2 = ds2.withColumn("od_status", when(ds2.col("a").equalTo(row2.getAs("a")), "plugged").otherwise(ds2.col("od_status")))
-                             .withColumn("secondary_status", when(ds2.col("a").equalTo(row2.getAs("a")), "tolerated").otherwise(ds2.col("secondary_status")));
+                    ds2 = ds2.withColumn("od_status", when(ds2.col("instrumentID").equalTo(row2.getAs("instrumentID"))
+                                                             .and(ds2.col("id_cccy_iso").equalTo(row2.getAs("id_cccy_iso")))
+                                                             .and(ds2.col("am_pl_orig").equalTo(row2.getAs("am_pl_orig"))), "plugged")
+                                                        .otherwise(ds2.col("od_status")))
+                             .withColumn("secondary_status", when(ds2.col("instrumentID").equalTo(row2.getAs("instrumentID"))
+                                                                  .and(ds2.col("id_cccy_iso").equalTo(row2.getAs("id_cccy_iso")))
+                                                                  .and(ds2.col("am_pl_orig").equalTo(row2.getAs("am_pl_orig"))), "tolerated")
+                                                             .otherwise(ds2.col("secondary_status")));
                 }
             }
         }
