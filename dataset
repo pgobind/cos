@@ -184,3 +184,38 @@ public static List<Row> equalSubsetSum(List<Row> rows, int target) {
                    .orElse(null);
 }
 
+
+public static List<Row> closestSubsetSum(List<Row> rows, int target) {
+    List<Integer> sumsForRows = rows.stream()
+                                    .map(row -> row.<Integer>getAs("col1"))
+                                    .collect(Collectors.toList());
+
+    int n = sumsForRows.size();
+    Map<Integer, List<Integer>> dp = new HashMap<>();
+    dp.put(0, new ArrayList<>());  // Empty subset
+
+    IntStream.range(0, n).forEach(i -> {
+        int num = sumsForRows.get(i);
+        List<Integer> currentKeys = new ArrayList<>(dp.keySet()); // To avoid concurrent modification
+        currentKeys.stream()
+                   .filter(key -> key + num <= target && dp.get(key) != null)
+                   .forEach(key -> {
+                       List<Integer> subset = new ArrayList<>(dp.get(key));
+                       subset.add(i);
+                       dp.put(key + num, subset);
+                   });
+    });
+
+    // Finding the closest sum
+    int closestSum = IntStream.range(0, target + 1)
+                              .boxed()
+                              .sorted(Comparator.reverseOrder())
+                              .filter(dp::containsKey)
+                              .findFirst()
+                              .orElse(0);
+
+    return Optional.ofNullable(dp.get(closestSum))
+                   .map(indices -> indices.stream().map(rows::get).collect(Collectors.toList()))
+                   .orElse(null);
+}
+
