@@ -1,0 +1,57 @@
+// Your closest match logic
+private static List<Integer> closestSubsetIndices(List<Row> rows, int target, double tolerance) {
+    List<Integer> sumsForRows = rows.stream()
+                                    .map(row -> row.<Integer>getAs("am_pl_new"))
+                                    .collect(Collectors.toList());
+
+    int n = sumsForRows.size();
+    Map<Integer, List<Integer>> dp = new HashMap<>();
+    dp.put(0, new ArrayList<>());  // Empty subset
+
+    IntStream.range(0, n).forEach(i -> {
+        int num = sumsForRows.get(i);
+        List<Integer> currentKeys = new ArrayList<>(dp.keySet()); // To avoid concurrent modification
+        currentKeys.stream()
+                   .filter(key -> key + num <= target + tolerance && dp.get(key) != null)  // Account for tolerance in the upper limit
+                   .forEach(key -> {
+                       List<Integer> subset = new ArrayList<>(dp.get(key));
+                       subset.add(i);
+                       dp.put(key + num, subset);
+                   });
+    });
+
+    return dp.entrySet().stream()
+             .filter(entry -> Math.abs(entry.getKey() - target) <= tolerance)  // Only consider subsets within tolerance
+             .min((e1, e2) -> {
+                 int diff1 = Math.abs(e1.getKey() - target);
+                 int diff2 = Math.abs(e2.getKey() - target);
+                 if (diff1 == diff2) {
+                     return e1.getValue().size() - e2.getValue().size();  // Tiebreaker: smallest size wins
+                 }
+                 return diff1 - diff2;
+             })
+             .map(Map.Entry::getValue)
+             .orElse(null);
+}
+
+// ...
+
+public static void processDatasets(Dataset<Row> ds1, Dataset<Row> ds2) {
+    // ...
+
+    if (indices != null) {
+        // Exact match logic
+        // ...
+    } else {
+        // Handle the tolerance condition
+        double tolerance = row2.<Double>getAs("am_tolerance");
+        indices = closestSubsetIndices(matchingRowsForA, row2.<Integer>getAs("calculated_break"), tolerance);
+        
+        if (indices != null) {
+            ds2 = ds2.withColumn("od_status", when(ds2.col("a").equalTo(row2.getAs("a")), "plugged").otherwise(ds2.col("od_status")))
+                     .withColumn("secondary_status", when(ds2.col("a").equalTo(row2.getAs("a")), "tolerated").otherwise(ds2.col("secondary_status")));
+        }
+    }
+
+    // ...
+}
