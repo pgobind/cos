@@ -9,7 +9,7 @@ public class SparkSubsetSolver {
 
     private static List<Integer> getRowSums(List<Row> rows) {
         return rows.stream()
-                .map(row -> row.getAs("colc") + row.getAs("cold"))
+                .map(row -> row.getAs("col1"))
                 .collect(Collectors.toList());
     }
 
@@ -38,25 +38,36 @@ public class SparkSubsetSolver {
                 .orElse(null);
     }
 
-    public static List<Row> equalSubsetSum(List<Row> rows, int target) {
-        List<Integer> subset = getSubsetSum(rows, target);
-        return subset == null ? null : subset.stream().map(rows::get).collect(Collectors.toList());
-    }
-
     public static List<Row> closestSubsetSum(List<Row> rows, int target) {
-        return equalSubsetSum(rows, target); // Functionality is same, just renamed for clarity
+        List<Integer> subsetIndices = getSubsetSum(rows, target);
+        return subsetIndices == null ? null : subsetIndices.stream().map(rows::get).collect(Collectors.toList());
     }
 
-    public static void processDatasets(Dataset<Row> ds1, Dataset<Row> ds2) {
-        // ... (the same code for iterating over unique values of a and filtering rows)
+    public static Map<String, List<Row>> processDatasets(Dataset<Row> ds1, Dataset<Row> ds2) {
+        Map<String, List<Row>> result = new HashMap<>();
 
-        List<Row> equalSumRows = equalSubsetSum(ds1RowsForA, targetValue);
+        // For each 'a' value in ds2
+        ds2.collectAsList().forEach(rowDs2 -> {
+            int targetValue = rowDs2.getAs("sum");
+            String aValue = rowDs2.getAs("a");
 
-        if (equalSumRows == null) {
-            List<Row> closestSumRows = closestSubsetSum(ds1RowsForA, targetValue);
-            // TODO: Annotate rows based on closest sum
-        } else {
-            // TODO: Annotate rows for exact match
-        }
+            // Filter rows in ds1 where 'a' matches aValue
+            List<Row> ds1RowsForA = ds1.filter(row -> row.getAs("a").equals(aValue)).collectAsList();
+
+            List<Row> closestSubset = closestSubsetSum(ds1RowsForA, targetValue);
+
+            if (closestSubset != null) {
+                int closestSubsetSum = closestSubset.stream().mapToInt(row -> row.getAs("col1")).sum();
+                if (closestSubsetSum == targetValue) {
+                    result.put("Exact Match", closestSubset);
+                } else {
+                    result.put("Closest Match", closestSubset);
+                }
+            } else {
+                result.put("No Closest Match", ds1RowsForA);
+            }
+        });
+
+        return result;
     }
 }
