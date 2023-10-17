@@ -3,80 +3,57 @@ import org.apache.spark.sql.Row;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class SparkSubsetSolver {
 
-    // Equal Subset Sum Function
+    private static List<Integer> getRowSums(List<Row> rows) {
+        return rows.stream()
+                .map(row -> row.getAs("colc") + row.getAs("cold"))
+                .collect(Collectors.toList());
+    }
+
+    private static List<Integer> getSubsetSum(List<Row> rows, int target) {
+        List<Integer> sumsForRows = getRowSums(rows);
+
+        List<Integer>[] dp = new ArrayList[target + 1];
+        dp[0] = new ArrayList<>();
+
+        IntStream.range(0, sumsForRows.size()).forEach(i -> {
+            int num = sumsForRows.get(i);
+            IntStream.rangeClosed(num, target).map(j -> target + num - j).forEachOrdered(j -> {
+                if (dp[j - num] != null) {
+                    List<Integer> subset = new ArrayList<>(dp[j - num]);
+                    subset.add(i);
+                    dp[j] = subset;
+                }
+            });
+        });
+
+        return IntStream.rangeClosed(0, target)
+                .map(i -> target - i)
+                .filter(i -> dp[i] != null)
+                .mapToObj(i -> dp[i])
+                .findFirst()
+                .orElse(null);
+    }
+
     public static List<Row> equalSubsetSum(List<Row> rows, int target) {
-        List<Integer> sumsForRows = rows.stream()
-                .map(row -> row.getAs("colc") + row.getAs("cold"))
-                .collect(Collectors.toList());
-
-        int n = sumsForRows.size();
-        List<Integer>[] dp = new ArrayList[target + 1];
-        dp[0] = new ArrayList<>();  // Empty subset
-
-        for (int i = 0; i < n; i++) {
-            int num = sumsForRows.get(i);
-            for (int j = target; j >= num; j--) {
-                if (dp[j - num] != null) {
-                    List<Integer> subset = new ArrayList<>(dp[j - num]);
-                    subset.add(i);  // Adding current index to the subset
-                    dp[j] = subset;
-                }
-            }
-        }
-
-        if (dp[target] != null) {
-            return dp[target].stream()
-                    .map(rows::get)
-                    .collect(Collectors.toList());
-        } else {
-            return null;  // In case no subset is found
-        }
+        List<Integer> subset = getSubsetSum(rows, target);
+        return subset == null ? null : subset.stream().map(rows::get).collect(Collectors.toList());
     }
 
-    // Closest Subset Sum Function
     public static List<Row> closestSubsetSum(List<Row> rows, int target) {
-        List<Integer> sumsForRows = rows.stream()
-                .map(row -> row.getAs("colc") + row.getAs("cold"))
-                .collect(Collectors.toList());
-
-        int n = sumsForRows.size();
-        List<Integer>[] dp = new ArrayList[target + 1];
-        dp[0] = new ArrayList<>();  // Empty subset
-
-        for (int i = 0; i < n; i++) {
-            int num = sumsForRows.get(i);
-            for (int j = target; j >= num; j--) {
-                if (dp[j - num] != null) {
-                    List<Integer> subset = new ArrayList<>(dp[j - num]);
-                    subset.add(i);  // Adding current index to the subset
-                    dp[j] = subset;
-                }
-            }
-        }
-
-        for (int i = target; i >= 0; i--) {
-            if (dp[i] != null) {
-                return dp[i].stream()
-                        .map(rows::get)
-                        .collect(Collectors.toList());
-            }
-        }
-
-        return null;  // In case no subset is found
+        return equalSubsetSum(rows, target); // Functionality is same, just renamed for clarity
     }
 
-    // Main process function integrating both functions
     public static void processDatasets(Dataset<Row> ds1, Dataset<Row> ds2) {
         // ... (the same code for iterating over unique values of a and filtering rows)
 
         List<Row> equalSumRows = equalSubsetSum(ds1RowsForA, targetValue);
-        List<Row> closestSumRows;
 
         if (equalSumRows == null) {
-            closestSumRows = closestSubsetSum(ds1RowsForA, targetValue);
+            List<Row> closestSumRows = closestSubsetSum(ds1RowsForA, targetValue);
             // TODO: Annotate rows based on closest sum
         } else {
             // TODO: Annotate rows for exact match
