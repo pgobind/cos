@@ -1,26 +1,60 @@
-// Your closest match logic
-private static List<Integer> closestSubsetIndices(List<Row> rows, int target, double tolerance) {
-    List<Integer> sumsForRows = rows.stream()
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+public class DataSetProcessor {
+
+    // Exact match logic
+    private static List<Integer> exactSubsetIndices(List<Row> rows, int target) {
+        List<Integer> sumsForRows = rows.stream()
+                                        .map(row -> row.<Integer>getAs("am_pl_new"))
+                                        .collect(Collectors.toList());
+
+        int n = sumsForRows.size();
+        Map<Integer, List<Integer>> dp = new HashMap<>();
+        dp.put(0, new ArrayList<>());  // Empty subset
+
+        IntStream.range(0, n).forEach(i -> {
+            int num = sumsForRows.get(i);
+            List<Integer> currentKeys = new ArrayList<>(dp.keySet()); // To avoid concurrent modification
+            currentKeys.stream()
+                       .filter(key -> key + num <= target && dp.get(key) != null)
+                       .forEach(key -> {
+                           List<Integer> subset = new ArrayList<>(dp.get(key));
+                           subset.add(i);
+                           dp.put(key + num, subset);
+                       });
+        });
+
+        return dp.get(target);
+    }
+
+    // Closest match logic
+    private static List<Integer> closestSubsetIndices(List<Row> rows, int target, double tolerance) {
+        List<Integer> sumsForRows = rows.stream()
                                     .map(row -> row.<Integer>getAs("am_pl_new"))
                                     .collect(Collectors.toList());
 
-    int n = sumsForRows.size();
-    Map<Integer, List<Integer>> dp = new HashMap<>();
-    dp.put(0, new ArrayList<>());  // Empty subset
+        int n = sumsForRows.size();
+        Map<Integer, List<Integer>> dp = new HashMap<>();
+        dp.put(0, new ArrayList<>());  // Empty subset
 
-    IntStream.range(0, n).forEach(i -> {
-        int num = sumsForRows.get(i);
-        List<Integer> currentKeys = new ArrayList<>(dp.keySet()); // To avoid concurrent modification
-        currentKeys.stream()
-                   .filter(key -> key + num <= target + tolerance && dp.get(key) != null)  // Account for tolerance in the upper limit
-                   .forEach(key -> {
-                       List<Integer> subset = new ArrayList<>(dp.get(key));
-                       subset.add(i);
-                       dp.put(key + num, subset);
-                   });
-    });
+        IntStream.range(0, n).forEach(i -> {
+            int num = sumsForRows.get(i);
+            List<Integer> currentKeys = new ArrayList<>(dp.keySet()); // To avoid concurrent modification
+            currentKeys.stream()
+                       .filter(key -> key + num <= target + tolerance && dp.get(key) != null)  // Account for tolerance in the upper limit
+                       .forEach(key -> {
+                           List<Integer> subset = new ArrayList<>(dp.get(key));
+                           subset.add(i);
+                           dp.put(key + num, subset);
+                       });
+        });
 
-    return dp.entrySet().stream()
+        return dp.entrySet().stream()
              .filter(entry -> Math.abs(entry.getKey() - target) <= tolerance)  // Only consider subsets within tolerance
              .min((e1, e2) -> {
                  int diff1 = Math.abs(e1.getKey() - target);
@@ -32,26 +66,28 @@ private static List<Integer> closestSubsetIndices(List<Row> rows, int target, do
              })
              .map(Map.Entry::getValue)
              .orElse(null);
-}
-
-// ...
-
-public static void processDatasets(Dataset<Row> ds1, Dataset<Row> ds2) {
-    // ...
-
-    if (indices != null) {
-        // Exact match logic
-        // ...
-    } else {
-        // Handle the tolerance condition
-        double tolerance = row2.<Double>getAs("am_tolerance");
-        indices = closestSubsetIndices(matchingRowsForA, row2.<Integer>getAs("calculated_break"), tolerance);
-        
-        if (indices != null) {
-            ds2 = ds2.withColumn("od_status", when(ds2.col("a").equalTo(row2.getAs("a")), "plugged").otherwise(ds2.col("od_status")))
-                     .withColumn("secondary_status", when(ds2.col("a").equalTo(row2.getAs("a")), "tolerated").otherwise(ds2.col("secondary_status")));
-        }
     }
 
-    // ...
+    public static void processDatasets(Dataset<Row> ds1, Dataset<Row> ds2) {
+        for (Row row2 : ds2.collectAsList()) {
+            List<Row> matchingRowsForA = ds1.filter(ds1.col("a").equalTo(row2.getAs("a"))).collectAsList();
+            
+            List<Integer> indices = exactSubsetIndices(matchingRowsForA, row2.<Integer>getAs("calculated_break"));
+            
+            if (indices != null) {
+                // Exact match logic
+                ds2 = ds2.withColumn("calculated_break", when(ds2.col("a").equalTo(row2.getAs("a")), 0).otherwise(ds2.col("calculated_break")))
+                         .withColumn("secondary_status", when(ds2.col("a").equalTo(row2.getAs("a")), "clear").otherwise(ds2.col("secondary_status")));
+            } else {
+                // Handle the tolerance condition
+                double tolerance = row2.<Double>getAs("am_tolerance");
+                indices = closestSubsetIndices(matchingRowsForA, row2.<Integer>getAs("calculated_break"), tolerance);
+                
+                if (indices != null) {
+                    ds2 = ds2.withColumn("od_status", when(ds2.col("a").equalTo(row2.getAs("a")), "plugged").otherwise(ds2.col("od_status")))
+                             .withColumn("secondary_status", when(ds2.col("a").equalTo(row2.getAs("a")), "tolerated").otherwise(ds2.col("secondary_status")));
+                }
+            }
+        }
+    }
 }
