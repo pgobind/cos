@@ -1,0 +1,107 @@
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.functions;
+import org.apache.spark.sql.expressions.Window;
+
+// Step 1: Join ds1 and ds2
+Dataset<Row> joined = ds1.join(ds2,
+                               functions.array("instrumentid", "idccysso", "idgroup"));
+
+// Step 2: Aggregate sum of am_pl_new by break_comment
+Dataset<Row> aggregated = joined.groupBy("instrumentid", "idccysso", "idgroup", "break_comment")
+                                .agg(functions.sum("am_pl_new").as("sumAmPlNew"),
+                                     functions.first("calculated_break").as("firstCalculatedBreak"),
+                                     functions.first("am_tolerance").as("firstAmTolerance"),
+                                     functions.first("rt_fx").as("firstRtFx"));
+
+// Step 3: Filter for exact matches
+Dataset<Row> exactMatches = aggregated.filter(functions.col("sumAmPlNew").equalTo(functions.col("firstCalculatedBreak")));
+
+// Calculate difference for potential closest matches
+Dataset<Row> withDifference = aggregated.withColumn("difference",
+       functions.abs(functions.col("sumAmPlNew").minus(functions.col("firstCalculatedBreak")))
+       .divide(functions.col("firstRtFx")))
+       .filter(functions.col("difference").leq(functions.col("firstAmTolerance")));
+
+// Rank the closest matches
+WindowSpec window = Window.partitionBy("instrumentid", "idccysso", "idgroup").orderBy(functions.col("difference"));
+Dataset<Row> rankedMatches = withDifference.withColumn("rank", functions.rank().over(window));
+
+// Only keep the closest match for each group
+Dataset<Row> closestMatches = rankedMatches.filter(functions.col("rank").equalTo(1));
+
+// Step 4: Prepare updates for ds2 and ds1
+
+// Updates for ds2 based on exact match
+Dataset<Row> updatedDs2Exact = ds2.join(exactMatches,
+                                        functions.array("instrumentid", "idccysso", "idgroup"),
+                                        "left_outer")
+                                  .withColumn("break_status", 
+                                              functions.when(functions.col("sumAmPlNew").isNotNull(), "clear")
+                                                       .otherwise(functions.col("break_status")))
+                                  .withColumn("break_num", 
+                                              functions.when(functions.col("sumAmPlNew").isNotNull(), 
+                                                             functions.col("calculated_break").minus(functions.col("sumAmPlNew")))
+                                                       .otherwise(functions.col("calculated_break")));
+
+// Updates for ds1 based on exact match
+Dataset<Row> updatedDs1Exact = ds1.join(exactMatches,
+                                        functions.array("instrumentid", "idccysso", "idgroup"),
+                                        "left_outer")
+                                  .withColumn("id", 
+                                              functions.when(functions.col("sumAmPlNew").isNotNull(), "reconciled")
+                                                       .otherwise(functions.col("id")));
+
+// You can use a similar logic for updating datasets based on closest matches.
+
+// Updates for ds2 based on closest matches
+Dataset<Row> updatedDs2Closest = ds2.join(closestMatches,
+                                          functions.array("instrumentid", "idccysso", "idgroup"),
+                                          "left_outer")
+                                    .withColumn("break_status", 
+                                                functions.when(functions.col("rank").equalTo(1), "clear")
+                                                         .otherwise(functions.col("break_status")))
+                                    .withColumn("break_num", 
+                                                functions.when(functions.col("rank").equalTo(1), 
+                                                               functions.col("calculated_break").minus(functions.col("sumAmPlNew")))
+                                                         .otherwise(functions.col("calculated_break")));
+
+// Updates for ds1 based on closest matches
+Dataset<Row> updatedDs1Closest = ds1.join(closestMatches,
+                                          functions.array("instrumentid", "idccysso", "idgroup"),
+                                          "left_outer")
+                                    .withColumn("id", 
+                                                functions.when(functions.col("rank").equalTo(1), "reconciled")
+                                                         .otherwise(functions.col("id")));
+
+// Combining updated results from exact and closest matches for ds1
+Dataset<Row> finalUpdatedDs1 = updatedDs1Exact.union(updatedDs1Closest)
+                                              .distinct();
+
+// Combining updated results from exact and closest matches for ds2
+Dataset<Row> finalUpdatedDs2 = updatedDs2Exact.union(updatedDs2Closest)
+                                              .distinct();
+
+// Persist or write final updated datasets if needed
+finalUpdatedDs2.write().mode("overwrite").parquet("path/to/save/finalUpdatedDs2");
+finalUpdatedDs1.write().mode("overwrite").parquet("path/to/save/finalUpdatedDs1");
+
+---adjustments
+
+// Create Dataset of Adjustments from the closest matches
+Dataset<Adjustment> closeAdjustments = closestMatches.map(
+    (MapFunction<Row, Adjustment>) row -> {
+        String instrumentid = row.getAs("instrumentid");
+        String idccysso = row.getAs("idccysso");
+        String idgroup = row.getAs("idgroup");
+        double adjustmentValue = row.getAs("difference");  // Using the difference as an example adjustment value
+        return new Adjustment(instrumentid, idccysso, idgroup, adjustmentValue);
+    }, Encoders.bean(Adjustment.class)
+);
+
+// If you want it as a List<Adjustment>
+List<Adjustment> closeAdjustmentList = closeAdjustments.collectAsList();
+
+
+
+
