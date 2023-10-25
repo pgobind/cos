@@ -1,0 +1,50 @@
+@Service
+public class DynamicSchedulerService {
+
+    @Autowired
+    private ScheduledTaskRepository taskRepository;
+
+    // Key is task name, value is the ScheduledFuture<?> result of scheduling.
+    private Map<String, ScheduledFuture<?>> jobsMap = new ConcurrentHashMap<>();
+
+    @Autowired
+    private TaskScheduler taskScheduler;
+
+    public void startAllSchedulers() {
+        List<ScheduledTask> tasks = taskRepository.findAll();
+
+        tasks.forEach(task -> {
+            ScheduledFuture<?> scheduled = taskScheduler.schedule(() -> {
+                // Your task logic here
+            }, new CronTrigger(task.getCronExpression()));
+            jobsMap.put(task.getName(), scheduled);
+        });
+    }
+
+    public void cancelSchedule(String taskName) {
+        ScheduledFuture<?> scheduled = jobsMap.get(taskName);
+        if(scheduled != null) {
+            scheduled.cancel(true);
+            jobsMap.remove(taskName);
+        }
+    }
+
+    public void updateScheduler(String taskName, String newCronExpression) {
+        cancelSchedule(taskName);
+
+        ScheduledFuture<?> scheduled = taskScheduler.schedule(() -> {
+            // Your task logic here
+        }, new CronTrigger(newCronExpression));
+        jobsMap.put(taskName, scheduled);
+    }
+
+    @Transactional
+    public void updateTaskInDBAndScheduler(String taskName, String newCronExpression) {
+        ScheduledTask task = taskRepository.findByName(taskName);
+        if(task != null) {
+            task.setCronExpression(newCronExpression);
+            taskRepository.save(task);
+            updateScheduler(taskName, newCronExpression);
+        }
+    }
+}
