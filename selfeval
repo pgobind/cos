@@ -1,11 +1,14 @@
-Initiating from Scratch: "We started with nothing in hand and painstakingly built up the ENCORE infrastructure from the ground, setting up SEAL and navigating through the extensive processes to establish DevX, JET, and the necessary repositories."
 
-Navigating Architectural Challenges: "Our journey required constant follow-ups with the architectural and design teams, as we meticulously worked through the complexities of securing AOS approvals and finalizing a robust AWS system design."
+Certainly, emphasizing the difficulty and challenges faced during the project can help highlight the effort and determination it took to achieve success. Here are revised sentences that focus on the hardships and complexities of the tasks:
 
-Establishing Connectivity and Certifications: "We ensured seamless integration with existing services through MQ connectivity and pioneered the setup of MFTS for the new AWS account. Additionally, we implemented the CKMS automated certificate API to bolster our security measures."
+Starting from the Ground Up: "Beginning with no existing framework, we had to build the ENCORE infrastructure from scratch, navigating complex and uncharted territories to establish SEAL, set up DevX, and configure JET, all of which demanded extensive effort and perseverance."
 
-Pipeline and Project Setup: "For the first time, we took on the challenge of setting up the Jules pipeline, demonstrating our capability to adapt and learn on the fly, while also taking the responsibility of setting up new projects."
+Overcoming Architectural Hurdles: "The journey was fraught with challenges as we tirelessly liaised with the architectural and design teams, working relentlessly to secure AOS approvals and finalize a robust AWS system design amidst numerous obstacles."
 
-Building an Event-Driven Architecture: "We delved deep into creating an event-driven architecture, connecting S3/SQS to Lambda to EMR, showcasing our technical skills, and ensuring a seamless data flow for optimal performance."
+Ensuring Connectivity Against Odds: "We tackled the daunting task of establishing MQ connectivity with existing services and integrating MFTS for the new AWS account, all while implementing the CKMS automated certificate API under stringent security requirements."
 
-Operational Support and AWS Expertise: "Even after the initial setup, we continued to provide essential operational support and AWS expertise, ensuring that the ENCORE infrastructure was not just functioning but thriving under our careful watch."
+Pioneering Pipeline and Project Setup: "Setting up the Jules pipeline for the first time presented a steep learning curve, requiring us to push our limits and adapt quickly, while also taking on the responsibility of setting up new projects under tight timelines."
+
+Crafting an Event-Driven Architecture: "Creating an event-driven architecture from S3/SQS to Lambda to EMR was a herculean task, demanding an in-depth understanding of the technologies and a relentless commitment to ensuring a seamless data flow."
+
+Providing Unyielding Operational Support: "Our work didn’t end with the setup; we continued to offer unwavering operational support and AWS expertise, tackling unexpected issues head-on and ensuring the ENCORE infrastructure's resilience and performance."
