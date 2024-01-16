@@ -1,0 +1,47 @@
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.expressions.UserDefinedFunction;
+import static org.apache.spark.sql.functions.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class SparkGroupByComplex {
+    public static void main(String[] args) {
+        SparkSession spark = SparkSession.builder().appName("Complex GroupBy Example").getOrCreate();
+
+        // Assuming df is your dataset
+        Dataset<Row> df = // your dataset
+
+        // UDF to create concatenated string
+        UserDefinedFunction customConcat = udf(
+            (Map<String, Map<String, Long>> groupedData) -> {
+                StringBuilder result = new StringBuilder();
+                groupedData.forEach((e, dMap) -> {
+                    dMap.forEach((d, sumC) -> {
+                        if (result.length() > 0) {
+                            result.append(", ");
+                        }
+                        result.append(e).append("@").append(sumC).append("@").append(d);
+                    });
+                });
+                return result.toString();
+            }
+        );
+
+        Dataset<Row> aggregated = df
+            .groupBy(col("a"), col("b"), col("e"), col("d"))
+            .agg(sum("c").as("sum_c"))
+            .groupBy(col("a"), col("b"))
+            .agg(
+                collect_list(struct(col("e"), col("d"), col("sum_c"))).as("grouped_data")
+            )
+            .withColumn("concat_result", customConcat.apply(col("grouped_data")))
+            .select("a", "b", "concat_result");
+
+        aggregated.show();
+    }
+}
