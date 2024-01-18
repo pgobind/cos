@@ -8,11 +8,12 @@ FROM (
         colm1, 
         colm2, 
         COUNT(*) OVER (PARTITION BY colm1, colm2) as group_count,
-        ROW_NUMBER() OVER (ORDER BY colm1, colm2) as rn,
+        ROW_NUMBER() OVER (ORDER BY colm1, colm2, sort_column) as rn,  -- Sorting for pagination
         other_columns
     FROM 
         T
     -- Include WHERE conditions here if necessary
 ) sub
 WHERE 
-    sub.rn > :offset AND sub.rn <= :offset + :pageSize;
+    sub.rn > :offset AND sub.rn <= :offset + :pageSize
+ORDER BY sub.sort_column;  -- Final sorting for the output
