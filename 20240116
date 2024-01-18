@@ -1,43 +1,18 @@
-import org.apache.spark.sql.api.java.UDF1;
-import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.types.DataTypes;
-import scala.collection.mutable.WrappedArray;
-import org.apache.spark.sql.Row;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-public class CustomConcatUDF implements UDF1<WrappedArray<Row>, String> {
-    @Override
-    public String call(WrappedArray<Row> rows) {
-        Map<String, Map<String, Long>> eMap = new HashMap<>();
-
-        // Process each row
-        for (Row row : rows) {
-            String e = row.getAs("e");
-            String d = row.getAs("d");
-            Long c = row.getAs("c");
-
-            eMap.computeIfAbsent(e, k -> new HashMap<>())
-                .merge(d, c, Long::sum);
-        }
-
-        // Build the result string
-        return eMap.entrySet().stream()
-            .flatMap(eEntry -> eEntry.getValue().entrySet().stream()
-                .map(dEntry -> eEntry.getKey() + "@" + dEntry.getValue() + "@" + dEntry.getKey()))
-            .collect(Collectors.joining(", "));
-    }
-
-    public static void main(String[] args) {
-        SparkSession spark = SparkSession.builder()
-            .appName("Custom Concat UDF Example")
-            .getOrCreate();
-
-        // Register the UDF
-        spark.udf().register("customConcat", new CustomConcatUDF(), DataTypes.StringType);
-
-        // Now you can use the UDF in your Spark SQL queries or DataFrame transformations
-        // ...
-    }
-}
+SELECT 
+    sub.colm1, 
+    sub.colm2, 
+    sub.group_count, 
+    sub.other_columns
+FROM (
+    SELECT 
+        colm1, 
+        colm2, 
+        COUNT(*) OVER (PARTITION BY colm1, colm2) as group_count,
+        ROW_NUMBER() OVER (ORDER BY colm1, colm2) as rn,
+        other_columns
+    FROM 
+        T
+    -- Include WHERE conditions here if necessary
+) sub
+WHERE 
+    sub.rn > :offset AND sub.rn <= :offset + :pageSize;
