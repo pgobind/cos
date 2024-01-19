@@ -1,19 +1,25 @@
-WITH RankedData AS (
+WITH GroupBoundaries AS (
     SELECT 
         T.*,
-        COUNT(*) OVER (PARTITION BY colm1, colm2) as group_count,
-        ROW_NUMBER() OVER (PARTITION BY colm1, colm2 ORDER BY sort_column) as row_within_group,
-        MIN(ROW_NUMBER()) OVER (PARTITION BY colm1, colm2 ORDER BY sort_column) as group_start_row
+        ROW_NUMBER() OVER (ORDER BY known_sort_column_1, known_sort_column_2, ...) AS rn,
+        COUNT(*) OVER (PARTITION BY colm1, colm2, colm3, colm4, colm5) AS group_size,
+        FIRST_VALUE(rn) OVER (PARTITION BY colm1, colm2, colm3, colm4, colm5 ORDER BY known_sort_column_1, known_sort_column_2, ...) AS group_start,
+        LAST_VALUE(rn) OVER (PARTITION BY colm1, colm2, colm3, colm4, colm5 ORDER BY known_sort_column_1, known_sort_column_2, ...) RANGE BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING AS group_end
     FROM 
         T
-    -- Include WHERE conditions here if necessary
+    WHERE
+        -- Your complex WHERE conditions here
 ),
-PaginatedData AS (
+FilteredData AS (
     SELECT *,
-           ROW_NUMBER() OVER (ORDER BY colm1, colm2, sort_column) as overall_row_num
-    FROM RankedData
+           CASE 
+               WHEN rn >= :startRow AND rn <= :endRow THEN 'Include'
+               WHEN group_start <= :endRow AND group_end > :endRow THEN 'Include'
+               ELSE 'Exclude'
+           END AS inclusion_flag
+    FROM GroupBoundaries
 )
 SELECT *
-FROM PaginatedData
-WHERE overall_row_num > :offset AND overall_row_num <= :offset + :pageSize
-AND group_start_row <= :offset;
+FROM FilteredData
+WHERE inclusion_flag = 'Include'
+ORDER BY known_sort_column_1, known_sort_column_2, ...;
