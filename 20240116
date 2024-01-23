@@ -39,3 +39,18 @@ public class SparkUpdateFromJoin {
         spark.stop();
     }
 }
+
+
+spark.sql(
+    "SELECT " +
+    "m.*, " +
+    "COALESCE(mb.am_balance, m.am_current_balance) as am_current_balance " +
+    "FROM " +
+    "merit_rec m " +
+    "LEFT JOIN merit_balances mb ON cast(m.id as int) = cast(mb.id as int) " +
+    "LEFT JOIN ORG_OU_XREF o ON cast(m.id_org as int) = cast(o.id_org as int) " +
+    "LEFT JOIN SCA_GL_XREF s ON cast(m.id_sca as int) = cast(s.id_sca as int) " +
+    "WHERE " +
+    "cast(s.in_pnl_ugl as string) = 'P' " +
+    "AND cast(m.dt_cob as date) = cast(s.dt_cob as date)"
+)
