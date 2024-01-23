@@ -1,25 +1,42 @@
-WITH GroupBoundaries AS (
-    SELECT 
-        T.*,
-        ROW_NUMBER() OVER (ORDER BY known_sort_column_1, known_sort_column_2, ...) AS rn,
-        COUNT(*) OVER (PARTITION BY colm1, colm2, colm3, colm4, colm5) AS group_size,
-        FIRST_VALUE(rn) OVER (PARTITION BY colm1, colm2, colm3, colm4, colm5 ORDER BY known_sort_column_1, known_sort_column_2, ...) AS group_start,
-        LAST_VALUE(rn) OVER (PARTITION BY colm1, colm2, colm3, colm4, colm5 ORDER BY known_sort_column_1, known_sort_column_2, ...) RANGE BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING AS group_end
-    FROM 
-        T
-    WHERE
-        -- Your complex WHERE conditions here
-),
-FilteredData AS (
-    SELECT *,
-           CASE 
-               WHEN rn >= :startRow AND rn <= :endRow THEN 'Include'
-               WHEN group_start <= :endRow AND group_end > :endRow THEN 'Include'
-               ELSE 'Exclude'
-           END AS inclusion_flag
-    FROM GroupBoundaries
-)
-SELECT *
-FROM FilteredData
-WHERE inclusion_flag = 'Include'
-ORDER BY known_sort_column_1, known_sort_column_2, ...;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import static org.apache.spark.sql.functions.*;
+
+public class SparkSqlUpdateSimulation {
+    public static void main(String[] args) {
+        SparkSession spark = SparkSession.builder()
+            .appName("Spark SQL Update Simulation")
+            .getOrCreate();
+
+        // Load your DataFrames
+        Dataset<Row> dfMeritRec = spark.read()./* Your code to load merit_rec */;
+        Dataset<Row> dfMeritBalances = spark.read()./* Your code to load merit_balances */;
+        Dataset<Row> dfOrgOuXref = spark.read()./* Your code to load ORG_OU_XREF */;
+        Dataset<Row> dfScaGlXref = spark.read()./* Your code to load SCA_GL_XREF */;
+
+        // Register the DataFrames as temporary views
+        dfMeritRec.createOrReplaceTempView("merit_rec");
+        dfMeritBalances.createOrReplaceTempView("merit_balances");
+        dfOrgOuXref.createOrReplaceTempView("ORG_OU_XREF");
+        dfScaGlXref.createOrReplaceTempView("SCA_GL_XREF");
+
+        // Perform the query with a left outer join and update-like coalesce
+        Dataset<Row> result = spark.sql(
+            "SELECT m.*, " +
+            "       COALESCE(mb.am_balance, m.am_current_balance) as new_am_current_balance " +
+            "FROM merit_rec m " +
+            "LEFT OUTER JOIN merit_balances mb ON m.id = mb.id " + // Adjust join conditions as necessary
+            "LEFT OUTER JOIN ORG_OU_XREF o ON m.id_org = o.id_org " + // Adjust join conditions as necessary
+            "LEFT OUTER JOIN SCA_GL_XREF s ON m.id_sca = s.id_sca " + // Adjust join conditions as necessary
+            "WHERE s.in_pnl_ugl = 'P' " +
+            "AND m.dt_cob = s.dt_cob" // Adjust the WHERE conditions as necessary
+        );
+
+        // Show the result
+        result.show();
+
+        // Stop SparkSession
+        spark.stop();
+    }
+}
