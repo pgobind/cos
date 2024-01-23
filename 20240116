@@ -54,3 +54,19 @@ spark.sql(
     "cast(s.in_pnl_ugl as string) = 'P' " +
     "AND cast(m.dt_cob as date) = cast(s.dt_cob as date)"
 )
+
+
+spark.sql(
+    "SELECT " +
+    "m.*, " +
+    "COALESCE(sub.am_balance, m.am_current_balance) as am_current_balance " +
+    "FROM merit_rec m " +
+    "LEFT JOIN (" +
+    "   SELECT mb.*, o.id_org, s.id_sca " +
+    "   FROM merit_balances mb " +
+    "   INNER JOIN ORG_OU_XREF o ON mb.id_ou = o.id_ou " +
+    "   INNER JOIN SCA_GL_XREF s ON mb.id_sca = s.id_sca AND mb.id_cy = s.id_cy " +
+    ") sub ON m.id = sub.id AND m.id_org = sub.id_org AND m.id_sca = sub.id_sca " +
+    "WHERE sub.in_pnl_ugl = 'P' AND m.dt_cob = sub.dt_cob"
+)
+
