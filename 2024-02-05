@@ -1,30 +1,37 @@
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.expressions.Window;
+import org.apache.spark.sql.types.DataTypes;
 import static org.apache.spark.sql.functions.*;
 
-public class SparkJob {
+public class SparkPayablesBalancesJob {
 
     public static void main(String[] args) {
         SparkSession spark = SparkSession.builder()
-                .appName("Create and Populate Table")
+                .appName("Spark Payables Balances Job")
                 .getOrCreate();
 
-        // Load the data into a DataFrame
-        Dataset<Row> extend_cust = spark.read().format("your_format").load("your_path");
+        // Replace with the actual loading code for your DataFrame
+        Dataset<Row> sourceDataFrame = spark.table("your_source_table");
 
-        // Create a view so we can use Spark SQL
-        extend_cust.createOrReplaceTempView("extend_cust");
+        // Transformations as per your SQL script (replace with actual logic)
+        Dataset<Row> transformedDataFrame = sourceDataFrame
+                .withColumn("id_gmi_cust", col("id_gmi_cust").cast(DataTypes.StringType))
+                .withColumn("id_desk", col("id_desk").cast(DataTypes.StringType))
+                .withColumn("id_le", col("id_le").cast(DataTypes.IntegerType))
+                .withColumn("tot_balance", sum(col("am_balance")).over(Window.partitionBy("id_le", "id_ou", "id_desk", "id_gmi_cust")));
 
-        // Perform the insert-select operation to get distinct rows
-        Dataset<Row> distinctRows = spark.sql("SELECT DISTINCT id_gmi_cust, id_desk, id_le FROM extend_cust");
+        // Write the transformed DataFrame to a table or file
+        transformedDataFrame.write().mode("overwrite").saveAsTable("your_destination_table");
 
-        // Register the distinct rows as a new temporary view
-        distinctRows.createOrReplaceTempView("distinctRows");
+        // Handle updates (you would need to create a new DataFrame for updates)
+        Dataset<Row> updatedDataFrame = transformedDataFrame
+                .withColumn("event", when(col("event_condition"), col("new_event_value"))
+                                     .otherwise(col("event")));
 
-        // Now you would typically write this DataFrame to a persistent storage or a Hive table
-        // Uncomment and modify the following line according to your environment and needs:
-        // distinctRows.write().format("your_format").save("your_new_table_path");
+        // Write the updated DataFrame to a table or file
+        updatedDataFrame.write().mode("overwrite").saveAsTable("your_destination_table");
 
         spark.stop();
     }
