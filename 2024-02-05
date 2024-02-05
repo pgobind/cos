@@ -1,36 +1,8 @@
-import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import static org.apache.spark.sql.functions.*;
-
-SparkSession spark = SparkSession.builder().appName("Translate SQL to Spark SQL").getOrCreate();
-
-// Assuming ptrf_gmi_ac is already loaded as a DataFrame from the Glue Data Catalog
-Dataset<Row> ptrf_gmi_ac = spark.table("your_glue_database.ptrf_gmi_ac");
-
-// Register the DataFrame as a temp view to use it in Spark SQL queries
-ptrf_gmi_ac.createOrReplaceTempView("ptrf_gmi_ac");
-
-// Perform the insert-select operation
-// In Spark, you don't "insert into" but you would just create a new DataFrame with the new data
-Dataset<Row> distinctValues = spark.sql("SELECT DISTINCT id_system, id_gmi_cust, id_group FROM ptrf_gmi_ac");
-distinctValues.createOrReplaceTempView("distinctValues");
-
-// Now perform the equivalent of the update operation. In Spark, this is typically done with a join
-Dataset<Row> joined = ptrf_gmi_ac.alias("p")
-    .join(distinctValues.alias("p2"), 
-          expr("p.id_system = p2.id_system AND p.id_group = p2.id_group"),
-          "left_outer");
-
-Dataset<Row> result = joined.selectExpr(
-    "p.id_system",
-    "case when p2.id_gmi_cust is not null then p2.id_gmi_cust else p.id_gmi_cust end as id_gmi_cust",
-    "p.id_group"
-);
-
-// Show the result for verification
-result.show();
-
-// If you need to write this result back into a table or as a file, you can do so
-// For example, to write back to a Glue table
-result.write().format("your_format").save("your_glue_database.new_table_name");
+ Dataset<Row> updatedDataFrame = spark.sql(
+                "SELECT p.id_system, " +
+                "       COALESCE(p2.id_gmi_cust, p.id_gmi_cust) AS id_gmi_cust, " +
+                "       p.id_group " +
+                "FROM ptrf_gmi_ac p " +
+                "LEFT JOIN distinctDataFrame p2 " +
+                "ON p.id_system = p2.id_system AND p.id_group = p2.id_group"
+        );
