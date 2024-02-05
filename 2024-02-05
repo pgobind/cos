@@ -2,59 +2,46 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 
-public class SparkSQLInserts {
+public class SparkSQLUpdate {
 
     public static void main(String[] args) {
         SparkSession spark = SparkSession.builder()
-                .appName("Spark SQL Inserts")
-                .enableHiveSupport() // Needed if you're inserting into Hive tables
+                .appName("Spark SQL Update")
                 .getOrCreate();
 
-        // Assuming fc_gmi_payables_data, sca_gl_xref, org_ou_xref are already defined DataFrames
-        // Dataset<Row> fcGmiPayablesData = ...;
-        // Dataset<Row> scaGlXref = ...;
-        // Dataset<Row> orgOuXref = ...;
+        // Assuming fc_daily_payables_data is your initial DataFrame
+        // Dataset<Row> fcDailyPayablesData = ...;
 
-        // Register the DataFrames as temporary views
-        fcGmiPayablesData.createOrReplaceTempView("fc_gmi_payables_data");
-        scaGlXref.createOrReplaceTempView("sca_gl_xref");
-        orgOuXref.createOrReplaceTempView("org_ou_xref");
+        // Register the DataFrame as a temporary view
+        fcDailyPayablesData.createOrReplaceTempView("fc_daily_payables_rec");
 
-        // First INSERT INTO operation
-        String sqlText1 = 
-            "INSERT INTO payables_postings " +
+        // Define the SQL query for the update
+        String sqlUpdate = 
             "SELECT " +
-            "   CAST(p.id_le AS INT), " +
-            "   CAST(p.id_ou AS INT), " +
-            "   p.id_cy_iso, " +
-            "   CAST(CAST(p.id_gl_acct AS NUMERIC) AS STRING) AS id_gl_acct, " +
-            "   SUM(p.am_posting) * -1 + 1 AS gmi_post_minus_1_5_PV " +
+            "   f1.*, " +
+            "   COALESCE(f2.gmi_post_d1, f1.gmi_post_d2) as gmi_post_d2, " +
+            "   COALESCE(f2.gmi_post_d2, f1.gmi_post_d3) as gmi_post_d3 " +
             "FROM " +
-            "   fc_gmi_payables_data p " +
-            "INNER JOIN sca_gl_xref s ON p.id_gl_acct = s.id_gl_acct " +
-            "INNER JOIN org_ou_xref o ON p.id_ou = o.id_ou " +
-            "   AND p.id_le = o.id_le " +
-            "   AND p.id_merit_le = o.id_merit_le " +
-            "WHERE " +
-            "   p.pn_ulq = 'n' " +
-            "   AND p.dt_load < 'Dategemi' " + // Replace 'Dategemi' with the actual date
-            "GROUP BY " +
-            "   p.id_le, " +
-            "   p.id_ou, " +
-            "   p.id_cy_iso, " +
-            "   p.id_gl_acct";
+            "   fc_daily_payables_rec f1 " +
+            "LEFT JOIN " +
+            "   fc_daily_payables_rec f2 " +
+            "ON " +
+            "   f1.id_le = f2.id_le " +
+            "   AND f1.id_ou = f2.id_ou " +
+            "   AND f1.id_gmi_cust = f2.id_gmi_cust " +
+            "   AND f1.id_cy_iso = f2.id_cy_iso " +
+            "   AND f1.dt_load = 'Dategemi' " + // Replace 'Dategemi' with the actual date
+            "   AND f2.dt_load = 'Dt_day2' " +  // Replace 'Dt_day2' with the actual date
+            "   AND TRIM(f1.id_gl_acc) = TRIM(f2.id_gl_acc)";
 
-        // Execute the first SQL query
-        spark.sql(sqlText1);
+        // Execute the update SQL query
+        Dataset<Row> updatedResult = spark.sql(sqlUpdate);
 
-        // Second INSERT INTO operation (Please adjust the SQL as per your second operation's logic)
-        String sqlText2 = 
-            "INSERT INTO another_table " + // Replace with your actual table name
-            "SELECT " +
-            "   /* Your select statement based on the second query logic */";
+        // Show the result or write it to storage
+        updatedResult.show();
 
-        // Execute the second SQL query
-        spark.sql(sqlText2);
+        // If you need to update the actual stored data, you would then write this DataFrame to overwrite the original data
+        // updatedResult.write().mode("overwrite").saveAsTable("fc_daily_payables_rec");
 
         spark.stop();
     }
