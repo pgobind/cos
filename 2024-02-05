@@ -1,14 +1,56 @@
-Dataset<Row> updatedDf = df.withColumn(
-            "event",
-            expr(
-                "CASE " +
-                "WHEN dt_load < toDate('Dategemi') " +
-                "AND event NOT LIKE '%[A-Z]%' " +
-                "AND CAST(SUBSTRING(event, 2, 3) AS INT) >= 50 " +
-                "AND CAST(SUBSTRING(event, 2, 3) AS INT) < 100 " +
-                "AND value_date > toDate('Dategemi') " +
-                "THEN CAST(SUBSTRING(event, 2, 3) AS INT) - 50 " +
-                "ELSE event " +
-                "END"
-            )
-        );
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+
+public class SparkSQLInsert {
+
+    public static void main(String[] args) {
+        SparkSession spark = SparkSession.builder()
+                .appName("Spark SQL Insert")
+                .getOrCreate();
+
+        // Assuming fc_gmi_payables_data, sca_gl_xref, org_ou_xref are already defined DataFrames
+        // Dataset<Row> fcGmiPayablesData = ...;
+        // Dataset<Row> scaGlXref = ...;
+        // Dataset<Row> orgOuXref = ...;
+
+        // Register the DataFrames as temporary views
+        fcGmiPayablesData.createOrReplaceTempView("fc_gmi_payables_data");
+        scaGlXref.createOrReplaceTempView("sca_gl_xref");
+        orgOuXref.createOrReplaceTempView("org_ou_xref");
+
+        // Define the SQL query
+        String sqlText = 
+            "INSERT INTO payables_postings " +
+            "SELECT " +
+            "   CAST(p.id_le AS INT), " +
+            "   CAST(p.id_ou AS INT), " +
+            "   p.id_cy_iso, " +
+            "   CAST(CAST(p.id_gl_acct AS NUMERIC) AS STRING) AS id_gl_acct, " +
+            "   SUM(p.am_posting) * -1 + 1 AS gmi_post_minus_1_5_PV " +
+            "FROM " +
+            "   fc_gmi_payables_data p " +
+            "INNER JOIN sca_gl_xref s ON p.id_gl_acct = s.id_gl_acct " +
+            "INNER JOIN org_ou_xref o ON p.id_ou = o.id_ou " +
+            "   AND p.id_le = o.id_le " +
+            "   AND p.id_merit_le = o.id_merit_le " +
+            "WHERE " +
+            "   p.pn_ulq = 'n' " +
+            "   AND p.dt_load < 'Dategemi' " + // Replace 'Dategemi' with the actual date
+            "   AND NOT EXISTS ( " +
+            "       SELECT 1 FROM reference_value " +
+            "       WHERE ref_id = 'ASIA_FC_LE' " +
+            "       AND varchartest = CAST(p.id_ou AS STRING) " +
+            "   ) " +
+            "GROUP BY " +
+            "   p.id_le, " +
+            "   p.id_ou, " +
+            "   p.id_cy_iso, " +
+            "   p.id_gl_acct";
+
+        // Execute the SQL query
+        spark.sql(sqlText);
+
+        spark.stop();
+    }
+}
