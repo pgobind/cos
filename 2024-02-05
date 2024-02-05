@@ -2,11 +2,12 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 
-public class SparkSQLInsert {
+public class SparkSQLInserts {
 
     public static void main(String[] args) {
         SparkSession spark = SparkSession.builder()
-                .appName("Spark SQL Insert")
+                .appName("Spark SQL Inserts")
+                .enableHiveSupport() // Needed if you're inserting into Hive tables
                 .getOrCreate();
 
         // Assuming fc_gmi_payables_data, sca_gl_xref, org_ou_xref are already defined DataFrames
@@ -19,8 +20,8 @@ public class SparkSQLInsert {
         scaGlXref.createOrReplaceTempView("sca_gl_xref");
         orgOuXref.createOrReplaceTempView("org_ou_xref");
 
-        // Define the SQL query
-        String sqlText = 
+        // First INSERT INTO operation
+        String sqlText1 = 
             "INSERT INTO payables_postings " +
             "SELECT " +
             "   CAST(p.id_le AS INT), " +
@@ -37,19 +38,23 @@ public class SparkSQLInsert {
             "WHERE " +
             "   p.pn_ulq = 'n' " +
             "   AND p.dt_load < 'Dategemi' " + // Replace 'Dategemi' with the actual date
-            "   AND NOT EXISTS ( " +
-            "       SELECT 1 FROM reference_value " +
-            "       WHERE ref_id = 'ASIA_FC_LE' " +
-            "       AND varchartest = CAST(p.id_ou AS STRING) " +
-            "   ) " +
             "GROUP BY " +
             "   p.id_le, " +
             "   p.id_ou, " +
             "   p.id_cy_iso, " +
             "   p.id_gl_acct";
 
-        // Execute the SQL query
-        spark.sql(sqlText);
+        // Execute the first SQL query
+        spark.sql(sqlText1);
+
+        // Second INSERT INTO operation (Please adjust the SQL as per your second operation's logic)
+        String sqlText2 = 
+            "INSERT INTO another_table " + // Replace with your actual table name
+            "SELECT " +
+            "   /* Your select statement based on the second query logic */";
+
+        // Execute the second SQL query
+        spark.sql(sqlText2);
 
         spark.stop();
     }
