@@ -1,45 +1,58 @@
-import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import static org.apache.spark.sql.functions.*;
 
-public class SparkSQLJoinAggregation {
+public class SparkSQLJoinAggregate {
 
     public static void main(String[] args) {
         SparkSession spark = SparkSession.builder()
-                .appName("Spark SQL Join Aggregation")
+                .appName("Spark SQL Join and Aggregate")
                 .getOrCreate();
 
-        // Assuming the following DataFrames are already available
-        // Dataset<Row> meritBalances = ...
-        // Dataset<Row> orgOuXref = ...
-        // Dataset<Row> scaGlXref = ...
+        // Assume merit_balances, org_ou_xref, and sca_gl_xref are already defined DataFrames
+        // Dataset<Row> meritBalances = ...;
+        // Dataset<Row> orgOuXref = ...;
+        // Dataset<Row> scaGlXref = ...;
 
-        // Register the DataFrames as temporary views
+        // Create temporary views for your DataFrames
         meritBalances.createOrReplaceTempView("merit_balances");
         orgOuXref.createOrReplaceTempView("org_ou_xref");
         scaGlXref.createOrReplaceTempView("sca_gl_xref");
 
-        // Perform the join and aggregation using Spark SQL
-        Dataset<Row> result = spark.sql(
-                "INSERT INTO payables_balances " +
-                "SELECT " +
-                "   CAST(m.id_le AS INT), " +
-                "   CAST(m.id_ou AS INT), " +
-                "   m.id_cy_iso, " +
-                "   CAST(CAST(s.id_gl_acct AS NUMERIC) AS STRING) as id_gl_acct, " +
-                "   SUM(CAST(m.am_balance AS DECIMAL(38, 20))) as tot_balance " +
-                "FROM merit_balances m " +
-                "INNER JOIN org_ou_xref o ON m.id_ou = o.x_id_ou " +
-                "INNER JOIN sca_gl_xref s ON m.id_gl_xref = s.x_sca_gl_xref " +
-                "WHERE CAST(m.dt_cob AS DATE) = 'Dategemi' " +
-                "   AND m.pn_ulq = 'n' " +
-                "   AND o.id_merit_le = s.id_corp_entity " +
-                "   AND o.id_le = s.id_le " +
-                "GROUP BY m.id_le, m.id_ou, m.id_cy_iso, s.id_gl_acct"
-        );
+        // Define the SQL query
+        String sqlQuery = 
+            "SELECT " +
+            "   CAST(m.id_le AS INT) as id_le, " +
+            "   CAST(m.id_ou AS INT) as id_ou, " +
+            "   m.id_cy_iso, " +
+            "   CAST(CAST(s.id_gl_acct AS NUMERIC) AS STRING) as id_gl_acct, " +
+            "   SUM(CAST(m.am_balance AS DECIMAL(38, 20))) as tot_balance " +
+            "FROM " +
+            "   merit_balances m " +
+            "INNER JOIN org_ou_xref x ON m.id_ou = x.x_id_ou " +
+            "   AND m.id_merit_le = x.id_merit_le " +
+            "   AND m.id_le = x.id_le " +
+            "INNER JOIN sca_gl_xref s ON m.id_gl_xref = s.x_sca_gl_xref " +
+            "   AND m.id_cy_iso = s.id_cy_iso " +
+            "WHERE " +
+            "   m.pn_ulq = 'n' " +
+            "   AND CAST(m.dt_cob AS DATE) = DATE 'Dategemi' " + // Replace 'Dategemi' with actual date value
+            "GROUP BY " +
+            "   m.id_le, " +
+            "   m.id_ou, " +
+            "   m.id_cy_iso, " +
+            "   s.id_gl_acct";
 
-        // If you need to store the result, you can use the following line
-        // result.write().mode(SaveMode.Overwrite).saveAsTable("payables_balances");
+        // Execute the SQL query to create a new DataFrame
+        Dataset<Row> result = spark.sql(sqlQuery);
+
+        // Now, you would write the result to the destination, which could be a table or file system
+        // For example, to overwrite a Hive table:
+        // result.write().mode("overwrite").saveAsTable("payables_balances");
+
+        // Or to write to a Parquet file:
+        // result.write().mode("overwrite").parquet("/path/to/save/payables_balances");
 
         spark.stop();
     }
