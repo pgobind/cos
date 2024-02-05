@@ -1,37 +1,45 @@
+import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.expressions.Window;
-import org.apache.spark.sql.types.DataTypes;
-import static org.apache.spark.sql.functions.*;
 
-public class SparkPayablesBalancesJob {
+public class SparkSQLJoinAggregation {
 
     public static void main(String[] args) {
         SparkSession spark = SparkSession.builder()
-                .appName("Spark Payables Balances Job")
+                .appName("Spark SQL Join Aggregation")
                 .getOrCreate();
 
-        // Replace with the actual loading code for your DataFrame
-        Dataset<Row> sourceDataFrame = spark.table("your_source_table");
+        // Assuming the following DataFrames are already available
+        // Dataset<Row> meritBalances = ...
+        // Dataset<Row> orgOuXref = ...
+        // Dataset<Row> scaGlXref = ...
 
-        // Transformations as per your SQL script (replace with actual logic)
-        Dataset<Row> transformedDataFrame = sourceDataFrame
-                .withColumn("id_gmi_cust", col("id_gmi_cust").cast(DataTypes.StringType))
-                .withColumn("id_desk", col("id_desk").cast(DataTypes.StringType))
-                .withColumn("id_le", col("id_le").cast(DataTypes.IntegerType))
-                .withColumn("tot_balance", sum(col("am_balance")).over(Window.partitionBy("id_le", "id_ou", "id_desk", "id_gmi_cust")));
+        // Register the DataFrames as temporary views
+        meritBalances.createOrReplaceTempView("merit_balances");
+        orgOuXref.createOrReplaceTempView("org_ou_xref");
+        scaGlXref.createOrReplaceTempView("sca_gl_xref");
 
-        // Write the transformed DataFrame to a table or file
-        transformedDataFrame.write().mode("overwrite").saveAsTable("your_destination_table");
+        // Perform the join and aggregation using Spark SQL
+        Dataset<Row> result = spark.sql(
+                "INSERT INTO payables_balances " +
+                "SELECT " +
+                "   CAST(m.id_le AS INT), " +
+                "   CAST(m.id_ou AS INT), " +
+                "   m.id_cy_iso, " +
+                "   CAST(CAST(s.id_gl_acct AS NUMERIC) AS STRING) as id_gl_acct, " +
+                "   SUM(CAST(m.am_balance AS DECIMAL(38, 20))) as tot_balance " +
+                "FROM merit_balances m " +
+                "INNER JOIN org_ou_xref o ON m.id_ou = o.x_id_ou " +
+                "INNER JOIN sca_gl_xref s ON m.id_gl_xref = s.x_sca_gl_xref " +
+                "WHERE CAST(m.dt_cob AS DATE) = 'Dategemi' " +
+                "   AND m.pn_ulq = 'n' " +
+                "   AND o.id_merit_le = s.id_corp_entity " +
+                "   AND o.id_le = s.id_le " +
+                "GROUP BY m.id_le, m.id_ou, m.id_cy_iso, s.id_gl_acct"
+        );
 
-        // Handle updates (you would need to create a new DataFrame for updates)
-        Dataset<Row> updatedDataFrame = transformedDataFrame
-                .withColumn("event", when(col("event_condition"), col("new_event_value"))
-                                     .otherwise(col("event")));
-
-        // Write the updated DataFrame to a table or file
-        updatedDataFrame.write().mode("overwrite").saveAsTable("your_destination_table");
+        // If you need to store the result, you can use the following line
+        // result.write().mode(SaveMode.Overwrite).saveAsTable("payables_balances");
 
         spark.stop();
     }
