@@ -1,8 +1,31 @@
- Dataset<Row> updatedDataFrame = spark.sql(
-                "SELECT p.id_system, " +
-                "       COALESCE(p2.id_gmi_cust, p.id_gmi_cust) AS id_gmi_cust, " +
-                "       p.id_group " +
-                "FROM ptrf_gmi_ac p " +
-                "LEFT JOIN distinctDataFrame p2 " +
-                "ON p.id_system = p2.id_system AND p.id_group = p2.id_group"
-        );
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import static org.apache.spark.sql.functions.*;
+
+public class SparkJob {
+
+    public static void main(String[] args) {
+        SparkSession spark = SparkSession.builder()
+                .appName("Create and Populate Table")
+                .getOrCreate();
+
+        // Load the data into a DataFrame
+        Dataset<Row> extend_cust = spark.read().format("your_format").load("your_path");
+
+        // Create a view so we can use Spark SQL
+        extend_cust.createOrReplaceTempView("extend_cust");
+
+        // Perform the insert-select operation to get distinct rows
+        Dataset<Row> distinctRows = spark.sql("SELECT DISTINCT id_gmi_cust, id_desk, id_le FROM extend_cust");
+
+        // Register the distinct rows as a new temporary view
+        distinctRows.createOrReplaceTempView("distinctRows");
+
+        // Now you would typically write this DataFrame to a persistent storage or a Hive table
+        // Uncomment and modify the following line according to your environment and needs:
+        // distinctRows.write().format("your_format").save("your_new_table_path");
+
+        spark.stop();
+    }
+}
