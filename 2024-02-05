@@ -1,59 +1,14 @@
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
-import static org.apache.spark.sql.functions.*;
-
-public class SparkSQLJoinAggregate {
-
-    public static void main(String[] args) {
-        SparkSession spark = SparkSession.builder()
-                .appName("Spark SQL Join and Aggregate")
-                .getOrCreate();
-
-        // Assume merit_balances, org_ou_xref, and sca_gl_xref are already defined DataFrames
-        // Dataset<Row> meritBalances = ...;
-        // Dataset<Row> orgOuXref = ...;
-        // Dataset<Row> scaGlXref = ...;
-
-        // Create temporary views for your DataFrames
-        meritBalances.createOrReplaceTempView("merit_balances");
-        orgOuXref.createOrReplaceTempView("org_ou_xref");
-        scaGlXref.createOrReplaceTempView("sca_gl_xref");
-
-        // Define the SQL query
-        String sqlQuery = 
-            "SELECT " +
-            "   CAST(m.id_le AS INT) as id_le, " +
-            "   CAST(m.id_ou AS INT) as id_ou, " +
-            "   m.id_cy_iso, " +
-            "   CAST(CAST(s.id_gl_acct AS NUMERIC) AS STRING) as id_gl_acct, " +
-            "   SUM(CAST(m.am_balance AS DECIMAL(38, 20))) as tot_balance " +
-            "FROM " +
-            "   merit_balances m " +
-            "INNER JOIN org_ou_xref x ON m.id_ou = x.x_id_ou " +
-            "   AND m.id_merit_le = x.id_merit_le " +
-            "   AND m.id_le = x.id_le " +
-            "INNER JOIN sca_gl_xref s ON m.id_gl_xref = s.x_sca_gl_xref " +
-            "   AND m.id_cy_iso = s.id_cy_iso " +
-            "WHERE " +
-            "   m.pn_ulq = 'n' " +
-            "   AND CAST(m.dt_cob AS DATE) = DATE 'Dategemi' " + // Replace 'Dategemi' with actual date value
-            "GROUP BY " +
-            "   m.id_le, " +
-            "   m.id_ou, " +
-            "   m.id_cy_iso, " +
-            "   s.id_gl_acct";
-
-        // Execute the SQL query to create a new DataFrame
-        Dataset<Row> result = spark.sql(sqlQuery);
-
-        // Now, you would write the result to the destination, which could be a table or file system
-        // For example, to overwrite a Hive table:
-        // result.write().mode("overwrite").saveAsTable("payables_balances");
-
-        // Or to write to a Parquet file:
-        // result.write().mode("overwrite").parquet("/path/to/save/payables_balances");
-
-        spark.stop();
-    }
-}
+Dataset<Row> updatedDf = df.withColumn(
+            "event",
+            expr(
+                "CASE " +
+                "WHEN dt_load < toDate('Dategemi') " +
+                "AND event NOT LIKE '%[A-Z]%' " +
+                "AND CAST(SUBSTRING(event, 2, 3) AS INT) >= 50 " +
+                "AND CAST(SUBSTRING(event, 2, 3) AS INT) < 100 " +
+                "AND value_date > toDate('Dategemi') " +
+                "THEN CAST(SUBSTRING(event, 2, 3) AS INT) - 50 " +
+                "ELSE event " +
+                "END"
+            )
+        );
