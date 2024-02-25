@@ -1,30 +1,36 @@
-import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.functions.*;
+import static org.apache.spark.sql.functions.col;
 
-SparkSession spark = SparkSession.builder().appName("Spark SQL Example").getOrCreate();
+SparkSession spark = SparkSession.builder().appName("Update in Spark SQL").getOrCreate();
 
-// Register your DataFrames as temporary views so you can use them in SQL
+// Assuming fc_daily_ugl_rec is already loaded as a Dataset<Row>
+Dataset<Row> fc_daily_ugl_rec = ...; // Load your dataset here
+
+// Register the DataFrame as a temporary view to use Spark SQL
 fc_daily_ugl_rec.createOrReplaceTempView("fc_daily_ugl_rec");
-SCA_GL_XREF.createOrReplaceTempView("SCA_GL_XREF");
 
-// Now perform a SQL operation that mimics the update
-String sql =
-    "SELECT f.*, " +
-    "       CASE WHEN s.id_gl_acc IS NOT NULL THEN (f.am_u2_mktp_pl + f.am_u2_orig_prem + f.am_tplu1s1_mtd_pl - f.am_merit_mtd_pl) " +
-    "            ELSE f.am_diff END as am_diff, " +
-    "       CASE WHEN s.id_gl_acc IS NOT NULL THEN current_date() " +
-    "            ELSE f.dt_load END as dt_load " +
-    "FROM fc_daily_ugl_rec f " +
-    "LEFT JOIN SCA_GL_XREF s " +
-    "ON trim(f.id_gl_acc) = trim(s.id_gl_acc) " +
-    "AND f.id_le = s.id_le " +
-    "AND s.in_pnl_ugl = 'U'";
+// Define the SQL to apply the transformation logic
+String sqlText = "SELECT *, " +
+    "CASE " +
+    "WHEN dt_Load = date('dategmi') AND id_gl_acc IN ('S', 'L') AND am_u2_mktp_pl < 0 " +
+    "THEN (am_u2_mktp_pl + am_u2_orig_prem + am_tplu1s1_mtd_pl - am_merit_mtd_pl) " +
+    "ELSE am_diff " +
+    "END AS new_am_diff " +
+    "FROM fc_daily_ugl_rec";
 
-Dataset<Row> updatedDataset = spark.sql(sql);
+// Execute the SQL query to create a new DataFrame with the updated 'am_diff' values
+Dataset<Row> updatedDf = spark.sql(sqlText);
+
+// Now that you have the updated values in 'new_am_diff', you can drop the old 'am_diff' column
+// and rename 'new_am_diff' to 'am_diff'
+updatedDf = updatedDf.drop("am_diff")
+                     .withColumnRenamed("new_am_diff", "am_diff");
 
 // Overwrite the original dataset with the updated dataset
-updatedDataset.write().mode("overwrite").saveAsTable("fc_daily_ugl_rec");
+updatedDf.write().mode("overwrite").saveAsTable("fc_daily_ugl_rec");
 
 // Stop the Spark session
 spark.stop();
