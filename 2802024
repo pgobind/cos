@@ -1,32 +1,44 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import coalesce, trim, col, lit
 
 # Initialize Spark session
 spark = SparkSession.builder.appName("SQL to Spark Conversion").getOrCreate()
 
 # Assuming the DataFrames have already been created and are named as follows:
-# rec_pl_3way_mtd_posting_sum_df and rec_pl_3way_acct_linkage_df
+# rec_pl_3way_df, rec_pl_3way_mtd_posting_sum_df, prtf_gmi_ac_df
 # Also assuming that you have registered these DataFrames as temporary views
+rec_pl_3way_df.createOrReplaceTempView("rec_pl_3way")
 rec_pl_3way_mtd_posting_sum_df.createOrReplaceTempView("rec_pl_3way_mtd_posting_sum")
-rec_pl_3way_acct_linkage_df.createOrReplaceTempView("rec_pl_3way_acct_linkage")
+prtf_gmi_ac_df.createOrReplaceTempView("prtf_gmi_ac")
+
+# Replace @recdate and @office with the actual values you want to use
+recdate = "2024-02-28"  # Example date, use the actual date you need
+office = "YourOffice"   # Example office, use the actual office code you need
 
 # Write the Spark SQL equivalent of the update statement
-spark.sql("""
+spark.sql(f"""
     SELECT
-        p.*,
-        CASE
-            WHEN COALESCE(TRIM(p.id_gl_acct), '') = COALESCE(TRIM(l.id_gl_acct), '') AND p.dt_load = @recdate
-            THEN l.gl_acct_type
-            ELSE p.instrmnt_type
-        END AS instrmnt_type
+        t1.*,
+        COALESCE(t2.id_gmi_cust, t1.id_gmi_cust) AS new_id_gmi_cust,
+        COALESCE(t3.nms_book, t1.nms_book) AS new_nms_book
     FROM
-        rec_pl_3way_mtd_posting_sum p
+        rec_pl_3way t1
     LEFT JOIN
-        rec_pl_3way_acct_linkage l
+        rec_pl_3way_mtd_posting_sum t2
     ON
-        COALESCE(TRIM(p.id_gl_acct), '') = COALESCE(TRIM(l.id_gl_acct), '')
+        t1.dt_load_cob = t2.dt_load
+        AND t1.id_gmi_cust = t2.id_gmi_cust
+        AND t1.id_ccy_iso = t2.id_ccy_iso
+        AND t1.id_le = t2.id_le
+        AND t1.id_ou = TRIM(SUBSTRING(t1.id_desk, PATINDEX('%[0-9]%', t1.id_desk), 10))
+        AND t1.instrument_type = t2.instrmnt_type
+    LEFT JOIN
+        prtf_gmi_ac t3
+    ON
+        t1.id_group = t3.id_group
+        AND t1.id_system = t3.id_system
+        AND t3.id_ofc = '{office}'
     WHERE
-        p.dt_load = @recdate
-""").createOrReplaceTempView("updated_rec_pl_3way_mtd_posting_sum")
+        t1.dt_load_cob = '{recdate}'
+""").createOrReplaceTempView("updated_rec_pl_3way")
 
-# The 'updated_rec_pl_3way_mtd_posting_sum' view will have the 'instrmnt_type' column updated where conditions are met.
+# Now, the 'updated_rec_pl_3way' view will have the columns 'new_id_gmi_cust' and 'new_nms_book' with updated values where conditions are met.
