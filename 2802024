@@ -1,28 +1,32 @@
-# This Spark SQL statement uses a LEFT JOIN to ensure all rows from merit_postings are retained
-spark.sql("""
-    SELECT 
-        m.*,
-        CASE 
-            WHEN s.id_sca = m.id_sca
-            AND TRIM(m.id_corp_entity) = TRIM(s.id_corp_entity)
-            AND m.id_sys <= 'IEC'
-            AND MONTH(m.dt_rpt) = MONTH(CURRENT_DATE)
-            AND YEAR(m.dt_rpt) = YEAR(CURRENT_DATE)
-            AND m.in_pnl_lgl = 'P'
-            AND m.id_corp_entity = o.id_merit_le
-            AND m.id_org = o.id_org
-            AND COALESCE(m.account_type, 0) <= 2
-            AND m.processing = 0
-            AND m.date_dt_load = CURRENT_DATE()
-            THEN 1
-            ELSE m.processing
-        END AS processing
-    FROM 
-        merit_postings m
-    LEFT JOIN 
-        sca_gl_xref s ON m.id_sca = s.id_sca
-    LEFT JOIN 
-        org_ou_xref o ON m.id_corp_entity = o.id_merit_le
-""").createOrReplaceTempView("updated_merit_postings")
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import coalesce, trim, col, lit
 
-# The 'updated_merit_postings' view will contain all rows from 'merit_postings' with the 'processing' column updated where conditions are met.
+# Initialize Spark session
+spark = SparkSession.builder.appName("SQL to Spark Conversion").getOrCreate()
+
+# Assuming the DataFrames have already been created and are named as follows:
+# rec_pl_3way_mtd_posting_sum_df and rec_pl_3way_acct_linkage_df
+# Also assuming that you have registered these DataFrames as temporary views
+rec_pl_3way_mtd_posting_sum_df.createOrReplaceTempView("rec_pl_3way_mtd_posting_sum")
+rec_pl_3way_acct_linkage_df.createOrReplaceTempView("rec_pl_3way_acct_linkage")
+
+# Write the Spark SQL equivalent of the update statement
+spark.sql("""
+    SELECT
+        p.*,
+        CASE
+            WHEN COALESCE(TRIM(p.id_gl_acct), '') = COALESCE(TRIM(l.id_gl_acct), '') AND p.dt_load = @recdate
+            THEN l.gl_acct_type
+            ELSE p.instrmnt_type
+        END AS instrmnt_type
+    FROM
+        rec_pl_3way_mtd_posting_sum p
+    LEFT JOIN
+        rec_pl_3way_acct_linkage l
+    ON
+        COALESCE(TRIM(p.id_gl_acct), '') = COALESCE(TRIM(l.id_gl_acct), '')
+    WHERE
+        p.dt_load = @recdate
+""").createOrReplaceTempView("updated_rec_pl_3way_mtd_posting_sum")
+
+# The 'updated_rec_pl_3way_mtd_posting_sum' view will have the 'instrmnt_type' column updated where conditions are met.
