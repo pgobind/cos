@@ -1,44 +1,37 @@
 from pyspark.sql import SparkSession
 
 # Initialize Spark session
-spark = SparkSession.builder.appName("SQL to Spark Conversion").getOrCreate()
+spark = SparkSession.builder.appName("Conditional Update in Spark SQL").getOrCreate()
 
 # Assuming the DataFrames have already been created and are named as follows:
-# rec_pl_3way_df, rec_pl_3way_mtd_posting_sum_df, prtf_gmi_ac_df
+# rec_pl_3way_df and prtf_gmi_ac_df
 # Also assuming that you have registered these DataFrames as temporary views
 rec_pl_3way_df.createOrReplaceTempView("rec_pl_3way")
-rec_pl_3way_mtd_posting_sum_df.createOrReplaceTempView("rec_pl_3way_mtd_posting_sum")
 prtf_gmi_ac_df.createOrReplaceTempView("prtf_gmi_ac")
 
-# Replace @recdate and @office with the actual values you want to use
+# Replace @recdate with the actual value you want to use
 recdate = "2024-02-28"  # Example date, use the actual date you need
-office = "YourOffice"   # Example office, use the actual office code you need
 
 # Write the Spark SQL equivalent of the update statement
 spark.sql(f"""
     SELECT
         t1.*,
-        COALESCE(t2.id_gmi_cust, t1.id_gmi_cust) AS new_id_gmi_cust,
-        COALESCE(t3.nms_book, t1.nms_book) AS new_nms_book
+        COALESCE(t2.id_gmi_cust, t1.id_gmi_cust) as id_gmi_cust,
+        COALESCE(t2.id_prtf_fo, t1.rms_book) as rms_book,
+        CASE
+            WHEN t2.id_gmi_cust IS NOT NULL AND t1.id_system = t2.id_system AND t1.id_office = t2.id_ofc AND t1.id_group = t2.id_group
+            THEN t1.control + 10
+            ELSE t1.control
+        END as control
     FROM
         rec_pl_3way t1
     LEFT JOIN
-        rec_pl_3way_mtd_posting_sum t2
+        prtf_gmi_ac t2
     ON
-        t1.dt_load_cob = t2.dt_load
-        AND t1.id_gmi_cust = t2.id_gmi_cust
-        AND t1.id_ccy_iso = t2.id_ccy_iso
-        AND t1.id_le = t2.id_le
-        AND t1.id_ou = TRIM(SUBSTRING(t1.id_desk, PATINDEX('%[0-9]%', t1.id_desk), 10))
-        AND t1.instrument_type = t2.instrmnt_type
-    LEFT JOIN
-        prtf_gmi_ac t3
-    ON
-        t1.id_group = t3.id_group
-        AND t1.id_system = t3.id_system
-        AND t3.id_ofc = '{office}'
-    WHERE
         t1.dt_load_cob = '{recdate}'
+        AND t1.id_system = t2.id_system
+        AND t1.id_office = t2.id_ofc
+        AND t1.id_group = t2.id_group
 """).createOrReplaceTempView("updated_rec_pl_3way")
 
-# Now, the 'updated_rec_pl_3way' view will have the columns 'new_id_gmi_cust' and 'new_nms_book' with updated values where conditions are met.
+# The 'updated_rec_pl_3way' view will have the 'id_gmi_cust', 'rms_book', and 'control' columns with updated values where conditions are met.
