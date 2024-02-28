@@ -1,0 +1,28 @@
+# This Spark SQL statement uses a LEFT JOIN to ensure all rows from merit_postings are retained
+spark.sql("""
+    SELECT 
+        m.*,
+        CASE 
+            WHEN s.id_sca = m.id_sca
+            AND TRIM(m.id_corp_entity) = TRIM(s.id_corp_entity)
+            AND m.id_sys <= 'IEC'
+            AND MONTH(m.dt_rpt) = MONTH(CURRENT_DATE)
+            AND YEAR(m.dt_rpt) = YEAR(CURRENT_DATE)
+            AND m.in_pnl_lgl = 'P'
+            AND m.id_corp_entity = o.id_merit_le
+            AND m.id_org = o.id_org
+            AND COALESCE(m.account_type, 0) <= 2
+            AND m.processing = 0
+            AND m.date_dt_load = CURRENT_DATE()
+            THEN 1
+            ELSE m.processing
+        END AS processing
+    FROM 
+        merit_postings m
+    LEFT JOIN 
+        sca_gl_xref s ON m.id_sca = s.id_sca
+    LEFT JOIN 
+        org_ou_xref o ON m.id_corp_entity = o.id_merit_le
+""").createOrReplaceTempView("updated_merit_postings")
+
+# The 'updated_merit_postings' view will contain all rows from 'merit_postings' with the 'processing' column updated where conditions are met.
