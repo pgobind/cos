@@ -1,43 +1,29 @@
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, lit, regexp_extract, coalesce, current_date
+# Assuming the SparkSession is already initialized as 'spark'
+# and that you've loaded your data into DataFrames and registered them as temp views:
 
-# Initialize Spark session
-spark = SparkSession.builder.appName("SQL to Spark Conversion").getOrCreate()
+# DataFrame equivalent to 'rec_pl_3way_ledger_pnl_detail' is registered as 'df1'
+# DataFrame equivalent to 'rec_pl_3way_mtd_posting_sum' is registered as 'df2'
 
-# Assuming the DataFrame has already been created and is named rec_pl_3way_df
-rec_pl_3way_df.createOrReplaceTempView("rec_pl_3way")
+# Prepare the SQL statement to perform the update logic
+update_statement = """
+SELECT
+  df1.*,
+  COALESCE(df2.id_gl_acct, df1.id_gl_acc) AS id_gl_acc,
+  COALESCE(df2.id_sca, df1.id_sca) AS id_sca,
+  COALESCE(df2.am_posting, df1.am_ledger_mtd_pl) AS am_ledger_mtd_pl
+FROM df1
+LEFT JOIN df2
+  ON df1.dt_load = df2.dt_load
+  AND df1.id_le = df2.id_le
+  AND df1.id_ou = df2.id_ou
+  AND df1.id_ccy_iso = df2.id_ccy_iso
+  AND df1.id_gmi_cust = df2.id_gmi_cust
+  AND df1.id_instrmnt_type = df2.instrmnt_type
+WHERE df1.dt_load = 'recdate'
+"""
 
-# Replace @recdate with the actual value you want to use
-recdate = "2024-02-28"  # Example date, use the actual date you need
+# Execute the SQL statement
+updated_df = spark.sql(update_statement)
 
-# Write the Spark SQL equivalent of the select statement
-result_df = spark.sql(f"""
-    SELECT
-        '{recdate}' as recdate,
-        t1.id_le,
-        rtrim(regexp_extract(t1.id_desk, '\\d+', 0)) as trimmed_id_desk,
-        NULL as column3,  -- Replace with actual column name or calculation
-        NULL as column4,  -- Replace with actual column name or calculation
-        t1.id_gmi_cust,
-        t1.instrument_type,
-        t1.id_ccy_iso,
-        0.0 as column8,   -- Replace with actual column name or calculation
-        0.0 as column9,   -- Replace with actual column name or calculation
-        t1.am_gmi_mtd_pl,
-        0.0 as am_tpl_usd_Lfwd,  -- Replace with actual column name or calculation
-        0.0 as am_manual_cfwd,   -- Replace with actual column name or calculation
-        coalesce(t1.am_rev_ln_gmi, 0) as am_rev_ln_gmi,
-        coalesce(t1.am_rev_ln_union2, 0) as am_rev_ln_union2,
-        0.0 as column14,  -- Replace with actual column name or calculation
-        coalesce(t1.am_pl_perm, 0) as am_pl_perm,
-        -1.5 as ETP_Phase2_1,  -- Replace with actual value or calculation
-        -1.5 as ETP_Phase2_2,  -- Replace with actual value or calculation
-        coalesce(t1.am_union2_perm, 0) as am_union2_perm
-    FROM
-        rec_pl_3way t1
-    WHERE
-        t1.dt_load_cob = '{recdate}'
-        AND t1.am_gmi_mtd_pl >= 0.0
-""")
-
-result_df.show()  # or whatever operation you need to do with the result
+# Register the result as a new temp view
+updated_df.createOrReplaceTempView("updated_df1")
