@@ -1,29 +1,24 @@
-# Assuming the SparkSession is already initialized as 'spark'
-# and that you've loaded your data into DataFrames and registered them as temp views:
-
-# DataFrame equivalent to 'rec_pl_3way_ledger_pnl_detail' is registered as 'df1'
-# DataFrame equivalent to 'rec_pl_3way_mtd_posting_sum' is registered as 'df2'
-
-# Prepare the SQL statement to perform the update logic
-update_statement = """
+CREATE OR REPLACE TEMP VIEW updated_t1 AS
 SELECT
-  df1.*,
-  COALESCE(df2.id_gl_acct, df1.id_gl_acc) AS id_gl_acc,
-  COALESCE(df2.id_sca, df1.id_sca) AS id_sca,
-  COALESCE(df2.am_posting, df1.am_ledger_mtd_pl) AS am_ledger_mtd_pl
-FROM df1
-LEFT JOIN df2
-  ON df1.dt_load = df2.dt_load
-  AND df1.id_le = df2.id_le
-  AND df1.id_ou = df2.id_ou
-  AND df1.id_ccy_iso = df2.id_ccy_iso
-  AND df1.id_gmi_cust = df2.id_gmi_cust
-  AND df1.id_instrmnt_type = df2.instrmnt_type
-WHERE df1.dt_load = 'recdate'
-"""
-
-# Execute the SQL statement
-updated_df = spark.sql(update_statement)
-
-# Register the result as a new temp view
-updated_df.createOrReplaceTempView("updated_df1")
+  t1.*,
+  CASE
+    WHEN t2.id_gl_acct IS NOT NULL AND t1.id_gl_acct IS NULL THEN t2.id_gl_acct
+    ELSE t1.id_gl_acct
+  END as new_id_gl_acct
+FROM t1
+LEFT JOIN t2
+  ON t1.id_le = t2.id_le
+  AND t1.id_ou = t2.id_ou
+  AND t1.id_ccy_iso = t2.id_ccy_iso
+  AND t1.id_gmi_cust = t2.id_gmi_cust
+  AND t2.dt_load = DATE_SUB(t1.dt_load, INTERVAL 1.7 DAY)
+  AND t2.house = '323'
+LEFT JOIN t3
+  ON t1.id_le = t3.id_le
+  AND t1.id_gl_acct = t3.id_gl_acct
+LEFT JOIN t4
+  ON t1.id_le = t4.id_le
+  AND t4.id_gl_acct_type = 'NB'
+WHERE t1.dt_load = @recdate
+  AND t3.in_pnl_ugl = 'p'
+  AND (TRIM(t1.id_gl_acct) IS NULL AND TRIM(t3.id_gl_acct) IS NOT NULL)
