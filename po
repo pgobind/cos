@@ -1,0 +1,7 @@
+Cloud Infrastructure Optimization: Enhanced cloud infrastructure using AWS services, achieving dynamic scalability and cost efficiency, directly resulting in the execution of approximately 3000 jobs daily.
+Innovative UI Solutions: Engineered advanced UI solutions enabling real-time refresh without manual reloading, significantly improving user interaction and operational efficiency.
+S3 Bucket Cost Management: Implemented cost-effective S3 bucket management techniques, reducing storage costs by an estimated X%.
+Database Cost Containment: Capitalized on PostgreSQL’s open-source nature for database management, reducing licensing costs and contributing to a Y% decrease in overall project expenses.
+Automated Testing Framework: Developed a suite of generic testing tools and frameworks, leading to a Z% reduction in manual testing hours and enhancing developer efficiency by 23120+ hours annually.
+Continuous Integration/Deployment: Integrated and optimized Jenkins CI/CD pipelines, streamlining deployment processes, and significantly reducing deployment cycle times by Q%.
+Award-Winning Tool Development: Pioneered the IAS Recon tool, dramatically improving log file analysis efficiency and contributing to the tool's recognition at JPMC Innovation Week and the receipt of the DPS Excellence Award.
