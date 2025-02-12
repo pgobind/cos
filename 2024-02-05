@@ -1,48 +1,36 @@
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
 
-public class SparkSQLUpdate {
+import java.time.Duration;
+import java.time.Instant;
 
-    public static void main(String[] args) {
-        SparkSession spark = SparkSession.builder()
-                .appName("Spark SQL Update")
-                .getOrCreate();
+@Service
+public class LockService {
+    private final JdbcTemplate jdbcTemplate;
 
-        // Assuming fc_daily_payables_data is your initial DataFrame
-        // Dataset<Row> fcDailyPayablesData = ...;
+    public LockService(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
-        // Register the DataFrame as a temporary view
-        fcDailyPayablesData.createOrReplaceTempView("fc_daily_payables_rec");
+    public boolean acquireSystemLock(String systemId) throws InterruptedException {
+        Instant startTime = Instant.now();
+        Duration timeout = Duration.ofMinutes(5);
 
-        // Define the SQL query for the update
-        String sqlUpdate = 
-            "SELECT " +
-            "   f1.*, " +
-            "   COALESCE(f2.gmi_post_d1, f1.gmi_post_d2) as gmi_post_d2, " +
-            "   COALESCE(f2.gmi_post_d2, f1.gmi_post_d3) as gmi_post_d3 " +
-            "FROM " +
-            "   fc_daily_payables_rec f1 " +
-            "LEFT JOIN " +
-            "   fc_daily_payables_rec f2 " +
-            "ON " +
-            "   f1.id_le = f2.id_le " +
-            "   AND f1.id_ou = f2.id_ou " +
-            "   AND f1.id_gmi_cust = f2.id_gmi_cust " +
-            "   AND f1.id_cy_iso = f2.id_cy_iso " +
-            "   AND f1.dt_load = 'Dategemi' " + // Replace 'Dategemi' with the actual date
-            "   AND f2.dt_load = 'Dt_day2' " +  // Replace 'Dt_day2' with the actual date
-            "   AND TRIM(f1.id_gl_acc) = TRIM(f2.id_gl_acc)";
+        while (Duration.between(startTime, Instant.now()).compareTo(timeout) < 0) {
+            if (!isUserLockPresent()) {
+                // No user locks, place SYSTEM_LOCK
+                jdbcTemplate.update("INSERT INTO system_locks (lock_type, system_id) VALUES ('SYSTEM_LOCK', ?)", systemId);
+                System.out.println("SYSTEM_LOCK acquired by " + systemId);
+                return true;
+            }
+            System.out.println("Waiting for USER_LOCK to clear...");
+            Thread.sleep(5000); // Polling every 5 seconds
+        }
+        return false; // Timeout reached
+    }
 
-        // Execute the update SQL query
-        Dataset<Row> updatedResult = spark.sql(sqlUpdate);
-
-        // Show the result or write it to storage
-        updatedResult.show();
-
-        // If you need to update the actual stored data, you would then write this DataFrame to overwrite the original data
-        // updatedResult.write().mode("overwrite").saveAsTable("fc_daily_payables_rec");
-
-        spark.stop();
+    public void releaseSystemLock(String systemId) {
+        jdbcTemplate.update("DELETE FROM system_locks WHERE lock_type = 'SYSTEM_LOCK' AND system_id = ?", systemId);
+        System.out.println("SYSTEM_LOCK released for " + systemId);
     }
 }
