@@ -17,7 +17,7 @@ public class LockService {
     }
 
     /**
-     * Acquires a SYSTEM_LOCK if no USER_LOCK is present, waiting for up to 5 minutes.
+     * Acquires SYSTEM_LOCK after placing SYSTEM_LOCK_REQUEST and waiting for USER_LOCKs to clear.
      */
     @Transactional
     public boolean acquireSystemLock(String systemId) {
@@ -25,76 +25,94 @@ public class LockService {
         Duration timeout = Duration.ofMinutes(5);
 
         try {
+            // Step 1: Place SYSTEM_LOCK_REQUEST
+            jdbcTemplate.update("INSERT INTO system_locks (lock_type, system_id) VALUES ('SYSTEM_LOCK_REQUEST', ?)", systemId);
+            logger.info("SYSTEM_LOCK_REQUEST placed by {}", systemId);
+
             while (Duration.between(startTime, Instant.now()).compareTo(timeout) < 0) {
                 if (!isUserLockPresent()) {
-                    // No user locks, place SYSTEM_LOCK
+                    // Step 2: No user locks, place SYSTEM_LOCK
                     jdbcTemplate.update("INSERT INTO system_locks (lock_type, system_id) VALUES ('SYSTEM_LOCK', ?)", systemId);
                     logger.info("SYSTEM_LOCK acquired by {}", systemId);
+
+                    // Step 3: Remove SYSTEM_LOCK_REQUEST
+                    jdbcTemplate.update("DELETE FROM system_locks WHERE lock_type = 'SYSTEM_LOCK_REQUEST' AND system_id = ?", systemId);
                     return true;
                 }
                 logger.info("Waiting for USER_LOCK to clear...");
-                Thread.sleep(5000); // Polling every 5 seconds
+                Thread.sleep(5000); // Poll every 5 seconds
             }
+
+            // Step 4: Timeout reached, remove SYSTEM_LOCK_REQUEST
+            jdbcTemplate.update("DELETE FROM system_locks WHERE lock_type = 'SYSTEM_LOCK_REQUEST' AND system_id = ?", systemId);
             logger.warn("Timeout reached: Could not acquire SYSTEM_LOCK for {}", systemId);
-            return false; // Timeout reached
         } catch (Exception e) {
             logger.error("Error while acquiring SYSTEM_LOCK for {}: {}", systemId, e.getMessage());
-            throw new RuntimeException("Failed to acquire SYSTEM_LOCK", e);
         }
+        return false;
     }
 
     /**
-     * Releases the SYSTEM_LOCK for the given system.
+     * Releases SYSTEM_LOCK and SYSTEM_LOCK_REQUEST for the given system.
      */
     @Transactional
-    public void releaseSystemLock(String systemId) {
+    public boolean releaseSystemLock(String systemId) {
         try {
-            int rowsDeleted = jdbcTemplate.update("DELETE FROM system_locks WHERE lock_type = 'SYSTEM_LOCK' AND system_id = ?", systemId);
-            if (rowsDeleted > 0) {
-                logger.info("SYSTEM_LOCK released for {}", systemId);
+            int deletedLocks = jdbcTemplate.update("DELETE FROM system_locks WHERE (lock_type = 'SYSTEM_LOCK' OR lock_type = 'SYSTEM_LOCK_REQUEST') AND system_id = ?", systemId);
+            if (deletedLocks > 0) {
+                logger.info("SYSTEM_LOCK and SYSTEM_LOCK_REQUEST released for {}", systemId);
+                return true;
             } else {
-                logger.warn("No SYSTEM_LOCK found for {}", systemId);
+                logger.warn("No SYSTEM_LOCK or SYSTEM_LOCK_REQUEST found for {}", systemId);
             }
         } catch (Exception e) {
             logger.error("Error while releasing SYSTEM_LOCK for {}: {}", systemId, e.getMessage());
-            throw new RuntimeException("Failed to release SYSTEM_LOCK", e);
         }
+        return false;
     }
 
     /**
-     * Acquires a USER_LOCK for the given system.
+     * Acquires USER_LOCK if no SYSTEM_LOCK_REQUEST or SYSTEM_LOCK exists.
      */
     @Transactional
-    public void acquireUserLock(String systemId) {
+    public boolean acquireUserLock(String systemId) {
         try {
+            if (isSystemLockPresent()) {
+                logger.warn("Cannot acquire USER_LOCK, SYSTEM_LOCK or SYSTEM_LOCK_REQUEST is active.");
+                return false;
+            }
+
             jdbcTemplate.update("INSERT INTO system_locks (lock_type, system_id) VALUES ('USER_LOCK', ?)", systemId);
             logger.info("USER_LOCK acquired by {}", systemId);
+            return true;
+
         } catch (Exception e) {
             logger.error("Error while acquiring USER_LOCK for {}: {}", systemId, e.getMessage());
-            throw new RuntimeException("Failed to acquire USER_LOCK", e);
         }
+        return false;
     }
 
     /**
-     * Releases the USER_LOCK for the given system.
+     * Releases USER_LOCK for the given system.
      */
     @Transactional
-    public void releaseUserLock(String systemId) {
+    public boolean releaseUserLock(String systemId) {
         try {
-            int rowsDeleted = jdbcTemplate.update("DELETE FROM system_locks WHERE lock_type = 'USER_LOCK' AND system_id = ?", systemId);
-            if (rowsDeleted > 0) {
+            int deletedLocks = jdbcTemplate.update("DELETE FROM system_locks WHERE lock_type = 'USER_LOCK' AND system_id = ?", systemId);
+            if (deletedLocks > 0) {
                 logger.info("USER_LOCK released for {}", systemId);
+                return true;
             } else {
                 logger.warn("No USER_LOCK found for {}", systemId);
             }
         } catch (Exception e) {
             logger.error("Error while releasing USER_LOCK for {}: {}", systemId, e.getMessage());
-            throw new RuntimeException("Failed to release USER_LOCK", e);
         }
+        return false;
     }
 
     /**
-     * Checks if any USER_LOCK is present in the system.
+     * Checks if any USER_LOCK is present.
      */
     public boolean isUserLockPresent() {
         try {
@@ -102,7 +120,20 @@ public class LockService {
             return count != null && count > 0;
         } catch (Exception e) {
             logger.error("Error while checking USER_LOCK presence: {}", e.getMessage());
-            throw new RuntimeException("Failed to check USER_LOCK presence", e);
         }
+        return false;
+    }
+
+    /**
+     * Checks if SYSTEM_LOCK or SYSTEM_LOCK_REQUEST exists.
+     */
+    public boolean isSystemLockPresent() {
+        try {
+            Integer count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM system_locks WHERE lock_type IN ('SYSTEM_LOCK', 'SYSTEM_LOCK_REQUEST')", Integer.class);
+            return count != null && count > 0;
+        } catch (Exception e) {
+            logger.error("Error while checking SYSTEM_LOCK presence: {}", e.getMessage());
+        }
+        return false;
     }
 }
