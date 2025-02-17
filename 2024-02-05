@@ -1,8 +1,38 @@
-AWS Glue vs. EMR Serverless: A Comparison
-https://medium.com/@sachinksdata/aws-glue-vs-emr-vs-emr-serverless-a-comparison-69a5cf7c8979
+import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.sql.Encoders;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
-GoDaddy Case Study: Cost and Performance Optimization with EMR Serverless
-https://aws.amazon.com/blogs/big-data/how-the-godaddy-data-platform-achieved-over-60-cost-reduction-and-50-performance-boost-by-adopting-amazon-emr-serverless/
+@Transactional  // Ensures full rollback if any failure occurs
+public void persistIntradayTradeRecOutputToDb(final Dataset<Row> recOutput, final int businessDate) {
+    try {
+        // ✅ Pre-processing inside transaction
+        performPreInsertOperations(businessDate);
 
-AWS QuickSight Dashboard for AWS Glue Metrics
-https://aws.amazon.com/blogs/big-data/deploying-amazon-quicksight-dashboards-for-aws-glue-metrics/
+        // ✅ Processing partitions WITH transactional control
+        Dataset<Row> processedDataset = recOutput.flatMap((FlatMapFunction<Iterator<Row>, Row>) partition -> {
+            List<Row> partitionList = new ArrayList<>();
+            partition.forEachRemaining(partitionList::add);
+
+            // ✅ Batch update inside transactional block
+            EncoreStaticApplicationContext.getJdbc().batchUpdate(
+                TradeReconUtils.INTRADAY_TRADE_RECON_INSERT_SQL,
+                TradeReconUtils.getBatchPreparedStatementSetterForTradeRecon(partitionList, businessDate)
+            );
+
+            return partitionList.iterator(); // Must return an iterator
+        }, Encoders.bean(Row.class)); // ✅ Encoder for Spark Dataset
+
+        processedDataset.count(); // ✅ Ensures execution
+
+        // ✅ Post-processing inside transaction
+        performPostInsertOperations(businessDate);
+
+    } catch (Exception e) {
+        throw new RuntimeException("Transaction failed, rolling back everything", e);
+    }
+}
