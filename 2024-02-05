@@ -1,38 +1,13 @@
-import org.apache.spark.api.java.function.FlatMapFunction;
-import org.apache.spark.sql.Encoders;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.springframework.transaction.annotation.Transactional;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+Furthermore, it is important to counter the claim that AWS service limits are hard limits. AWS provides mechanisms to request quota increases, and many of these limits are soft limits that can be adjusted based on business needs. However, relying on AWS quota increases is not a sustainable solution when compared to a well-structured multi-account strategy, which inherently provides scalability, performance isolation, and operational efficiency without requiring frequent quota adjustments.
 
-@Transactional  // Ensures full rollback if any failure occurs
-public void persistIntradayTradeRecOutputToDb(final Dataset<Row> recOutput, final int businessDate) {
-    try {
-        // ✅ Pre-processing inside transaction
-        performPreInsertOperations(businessDate);
+4. The Misconception of Microservices and Account Consolidation
 
-        // ✅ Processing partitions WITH transactional control
-        Dataset<Row> processedDataset = recOutput.flatMap((FlatMapFunction<Iterator<Row>, Row>) partition -> {
-            List<Row> partitionList = new ArrayList<>();
-            partition.forEachRemaining(partitionList::add);
+Another point to address is the misinterpretation of microservices architecture in the context of AWS account consolidation. The argument that a single AWS account is more aligned with microservices architecture is flawed because:
 
-            // ✅ Batch update inside transactional block
-            EncoreStaticApplicationContext.getJdbc().batchUpdate(
-                TradeReconUtils.INTRADAY_TRADE_RECON_INSERT_SQL,
-                TradeReconUtils.getBatchPreparedStatementSetterForTradeRecon(partitionList, businessDate)
-            );
+Microservices are designed to be loosely coupled and independently scalable. Enforcing them to share an AWS account introduces operational bottlenecks and resource contention.
 
-            return partitionList.iterator(); // Must return an iterator
-        }, Encoders.bean(Row.class)); // ✅ Encoder for Spark Dataset
+Service Quotas Apply Across Microservices: If multiple microservices operate within a single AWS account, they will be subject to the same limits, increasing the risk of throttling and degraded performance.
 
-        processedDataset.count(); // ✅ Ensures execution
+Security Risks Multiply: A misconfigured IAM role or excessive permissions in one microservice could inadvertently affect others.
 
-        // ✅ Post-processing inside transaction
-        performPostInsertOperations(businessDate);
-
-    } catch (Exception e) {
-        throw new RuntimeException("Transaction failed, rolling back everything", e);
-    }
-}
+Microservices benefit the most when deployed in a multi-account architecture, ensuring better governance, security isolation, and performance scalability.
