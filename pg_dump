@@ -12,6 +12,30 @@ import java.util.Arrays;
 
 public class PostgresDumpUploader {
 
+import java.util.regex.*;
+
+public class JdbcUrlParser {
+    public static void main(String[] args) {
+        String jdbcUrl = "jdbc:postgresql://db.example.com:5432/mydatabase";
+
+        Pattern pattern = Pattern.compile("jdbc:postgresql://([^:/]+)(?::(\\d+))?/([^?]+)");
+        Matcher matcher = pattern.matcher(jdbcUrl);
+
+        if (matcher.find()) {
+            String host = matcher.group(1);
+            String port = matcher.group(2) != null ? matcher.group(2) : "5432"; // default port
+            String dbName = matcher.group(3);
+
+            System.out.println("Host: " + host);
+            System.out.println("Port: " + port);
+            System.out.println("Database: " + dbName);
+        } else {
+            System.out.println("Invalid JDBC URL.");
+        }
+    }
+}
+
+
     private static final String DB_NAME = "your_db_name";
     private static final String DB_USER = "your_username";
     private static final String DB_HOST = "your_db_host";
