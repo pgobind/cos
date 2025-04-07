@@ -1,85 +1,104 @@
-🧠 Project Name
-ArchWise: AI-Powered AWS Architecture Explorer
+ Hackathon Project: Autonomous Reconciliation Designer
+Auto-generate complex reconciliation pipelines using just a few samples and metadata — with an LLM-powered Copilot to explain, refine, and deploy.
 
-🎯 One-Liner
-An AI assistant that generates multiple AWS architecture options from a single project requirement — along with trade-offs on cost, performance, scalability, and resilience.
+🧩 Problem Statement
+Financial firms spend thousands of hours manually:
 
-🔍 Problem Statement
-Cloud solutioning often focuses on a single design path — but in reality, every architecture has trade-offs. For developers and architects working under time pressure (e.g., hackathons, MVPs, PoCs), it's hard to evaluate multiple AWS designs quickly and choose the best fit for their goals and constraints.
+Mapping fields between datasets (e.g., transactions vs. cash ledger)
 
-💡 What ArchWise Does
-Accepts high-level requirements (e.g., “real-time API with low latency and high availability”)
+Writing matching logic, tolerances, filters
 
-Generates 2–3 alternative AWS architectures for the use case
+Debugging why entries don’t match
 
-For each architecture:
+These rules are repetitive, domain-specific, and typically locked in tribal knowledge or legacy code.
 
-Lists key services used
+💡 Innovation
+Instead of hand-coding every reconciliation:
 
-Describes scaling strategies
+Upload a few example records from each dataset
 
-Highlights cost vs performance vs operational overhead
+System uses metadata + LLMs + prior recs to infer join logic and tolerances
 
-Outputs a side-by-side trade-off analysis to help users choose
+Auto-generates match templates + SQL/PySpark
 
-⚙️ How It Works
-Frontend: React-based chat or form input
+A Copilot-style UI allows business users to correct or enhance the logic
 
-Backend:
+Recs are deployed via AWS-native orchestration (Glue, Step Functions, or MWAA)
 
-Uses LLM (e.g., GPT-4) to interpret input and synthesize AWS architecture options
+🎯 Target Users
+Reconciliation SMEs
 
-Leverages AWS Well-Architected Framework for best practices
+Data engineers
 
-Auto-generates architecture descriptions and comparison tables
+Ops and finance teams
 
-(Optional) Uses Mermaid or Diagrams-as-Code to visualize options
+🏗️ High-Level Architecture
+plaintext
+Copy
+Edit
+                ┌──────────────────────┐
+                │ Sample Datasets (S3) │
+                └────────┬─────────────┘
+                         ↓
+        ┌──────────────────────────────────────┐
+        │ Metadata Collector (Glue Catalog)    │
+        └──────────────────────────────────────┘
+                         ↓
+        ┌──────────────────────────────────────┐
+        │ Embedding + Graph Learner (Neptune)  │
+        └──────────────────────────────────────┘
+                         ↓
+   ┌──────────────────────────────────────────────────────┐
+   │  LLM Prompt Engine (LangChain + Bedrock Claude/Titan)│
+   └──────────────────────────────────────────────────────┘
+                         ↓
+     ┌────────────────────────────────────────────┐
+     │ Copilot UI (Streamlit/React with feedback) │
+     └────────────────────────────────────────────┘
+                         ↓
+     ┌────────────────────────────────────────────┐
+     │ Pipeline Generator (SQL/PySpark) + Glue Job│
+     └────────────────────────────────────────────┘
+🧱 Tech Stack
+Layer	Tech
+Metadata	AWS Glue Catalog
+File Storage	S3
+LLM Inference	Amazon Bedrock (Claude, Titan)
+Embedding Store	Amazon Neptune or OpenSearch
+Graph Learning	PyTorch Geometric, SageMaker
+Code Generator	LangChain Agents + PromptTemplates
+UI Copilot	Streamlit or React
+Execution	AWS Glue / EMR / Step Functions
+🧪 What to Demo in Hackathon
+Upload two sample files (e.g., transactions.csv, cleared_cash.csv)
 
-🏗️ Architecture Example Output
-Given input:
+Glue Catalog auto-extracts schema
 
-“Build a serverless analytics dashboard with near real-time updates and cost-efficiency”
+UI shows suggested match logic:
+→ JOIN ON txn_id = cash_ref AND ABS(txn_amt - cash_amt) < 1.00
 
-ArchWise might output:
+LLM generates PySpark or SQL script
 
-Option 1: Fully Serverless
-Services: API Gateway, Lambda, DynamoDB, S3, Athena, QuickSight
+User modifies logic via Copilot prompt: “Also match on value_date within 1 day”
 
-Pros: Minimal ops, low cost, auto-scalable
+Glue Job executes logic → returns matched/unmatched report
 
-Cons: Cold starts, eventual consistency
+Optional: Save as reconciliation template for future reuse
 
-Use Case: Budget-sensitive dashboards with flexible latency
+🧠 Key AI Elements
+Few-shot learning to extrapolate match rules from small samples
 
-Option 2: Container-based
-Services: ECS Fargate, Aurora Serverless, S3
+Metadata embeddings to understand schema, naming similarity, past logic
 
-Pros: More control, faster execution
+Prompt chaining to generate and iteratively refine rec logic
 
-Cons: Slightly higher cost, more config
+Semantic matching instead of pure column-name matching
 
-Use Case: Medium-latency dashboards with consistent throughput
+🥇 Why This Wins a Hackathon
+Solves a real pain point in finance with immediate ROI
 
-Option 3: Real-time Stream Processing
-Services: Kinesis, Lambda, Redshift, QuickSight
+Uses multiple AWS-native services smartly
 
-Pros: Fast ingestion and query
+Has a clear demo moment: upload → AI suggests → Copilot refines → logic runs
 
-Cons: Higher cost, complex integration
-
-Use Case: High-frequency analytics dashboards
-
-📈 Why This Is Valuable
-Helps teams compare multiple cloud strategies quickly
-
-Encourages architectural thinking over defaulting to “whatever works”
-
-Drives better trade-off decisions (not just about cost, but performance and complexity)
-
-🎓 Who Would Use This
-Hackathon teams choosing a deploy strategy fast
-
-Cloud architects validating design options
-
-Developers learning AWS design patterns
-
+Great extension potential (Auto-deploy DAGs, integrate lineage, risk scoring)
