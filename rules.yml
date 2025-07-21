@@ -1,0 +1,358 @@
+rules:
+  - ruleId: CI_EarlyYes
+    name: "Client Initiated at CCP (Early Exercise - Yes)"
+    conditions:
+      - field: eventType
+        operator: "="
+        value: "Early"
+      - field: ccpLong
+        operator: ">"
+        value: 0
+      - field: intradayDelta
+        operator: "exists"
+        value: true
+    output:
+      field: ClientInitiated
+      value: "Yes"
+    comment: "For early events, if there is a long position exercised at the CCP (ccpLong > 0) and an intraday exercise delta is present, the client/broker initiated an early exercise at the CCP."
+
+  - ruleId: CI_EarlyNo
+    name: "Client Initiated at CCP (Early Exercise - No)"
+    conditions:
+      - field: eventType
+        operator: "="
+        value: "Early"
+      - field: ccpLong
+        operator: "="
+        value: 0
+    output:
+      field: ClientInitiated
+      value: "No"
+    comment: "For early events with no long positions exercised at CCP (ccpLong = 0), the exercise was not initiated by the client (likely no early client exercise)."
+
+  - ruleId: CI_EarlyNo2
+    name: "Client Initiated at CCP (Early - Long with no Delta)"
+    conditions:
+      - field: eventType
+        operator: "="
+        value: "Early"
+      - field: ccpLong
+        operator: ">"
+        value: 0
+      - field: intradayDelta
+        operator: "="
+        value: "n/a"
+    output:
+      field: ClientInitiated
+      value: "No"
+    comment: "If an early event shows a long position at CCP but intradayDelta is 'n/a' (no intraday exercise delta), treat it as not client-initiated (no manual early exercise instruction detected)."
+
+  - ruleId: CI_HouseNet
+    name: "Client Initiated at CCP (Expiry - House Netting)"
+    conditions:
+      - field: eventType
+        operator: "="
+        value: "Expiry"
+      - field: accountType
+        operator: "="
+        value: "House"
+      - field: ccpLong
+        operator: ">"
+        value: 0
+      - field: ccpShort
+        operator: ">"
+        value: 0
+    output:
+      field: ClientInitiated
+      value: "Yes"
+    comment: "For expiry events in House accounts, if both long and short positions exist at CCP, it indicates the house applied partial netting (exercising some longs while getting assigned on shorts) – a deliberate action by the firm. Mark this as client-initiated."
+
+  - ruleId: CI_ExpiryNo
+    name: "Client Initiated at CCP (Expiry - No Override)"
+    conditions:
+      - field: eventType
+        operator: "="
+        value: "Expiry"
+    output:
+      field: ClientInitiated
+      value: "No"
+    comment: "By default for expiry events (especially for client accounts), assume no client-initiated action at CCP. Exercises at expiry are typically automatic unless netting or manual override is indicated."
+
+  - ruleId: BAL_Full_Client
+    name: "Balance Full – Full Match (Client)"
+    conditions:
+      - field: accountType
+        operator: "="
+        value: "Client"
+      - field: ccpLong
+        operator: "="
+        value: gmiLong
+      - field: ccpShort
+        operator: "="
+        value: gmiShort
+    output:
+      field: Balance
+      value: "Full"
+    comment: "Full: For client accounts, CCP and GMI positions match exactly on both long and short sides (all exercised and assigned positions are fully recorded internally)."
+
+  - ruleId: BAL_Full_House
+    name: "Balance Full – Net Match (House)"
+    conditions:
+      - field: accountType
+        operator: "="
+        value: "House"
+      - field: "ccpLong - ccpShort"
+        operator: "="
+        value: "gmiLong - gmiShort"
+    output:
+      field: Balance
+      value: "Full"
+    comment: "Full: For house accounts, the net position matches between CCP and GMI. (The difference ccpLong - ccpShort equals gmiLong - gmiShort, indicating overall positions are fully reconciled after netting.)"
+
+  - ruleId: BAL_Partial_Client_Long
+    name: "Balance Partial – Partial Long Match (Client)"
+    conditions:
+      - field: accountType
+        operator: "="
+        value: "Client"
+      - field: ccpLong
+        operator: ">"
+        value: 0
+      - field: gmiLong
+        operator: ">"
+        value: 0
+      - field: ccpLong
+        operator: "!="
+        value: gmiLong
+    output:
+      field: Balance
+      value: "Partial"
+    comment: "Partial: For client accounts, both CCP and GMI show long (exercised) positions but quantities differ. Only a portion of the CCP long position is reflected in GMI (partial match, some exercised contracts unaccounted or over-recorded)."
+
+  - ruleId: BAL_Partial_Client_Short
+    name: "Balance Partial – Partial Short Match (Client)"
+    conditions:
+      - field: accountType
+        operator: "="
+        value: "Client"
+      - field: ccpShort
+        operator: ">"
+        value: 0
+      - field: gmiShort
+        operator: ">"
+        value: 0
+      - field: ccpShort
+        operator: "!="
+        value: gmiShort
+    output:
+      field: Balance
+      value: "Partial"
+    comment: "Partial: For client accounts, both CCP and GMI show short (assigned) positions but quantities differ. Only part of the assignments at CCP are recorded in GMI (partial match, indicating some assignments unaccounted or over-recorded)."
+
+  - ruleId: BAL_Partial_House_Long
+    name: "Balance Partial – Net Long Mismatch (House)"
+    conditions:
+      - field: accountType
+        operator: "="
+        value: "House"
+      - field: ccpLong
+        operator: ">"
+        value: ccpShort
+      - field: gmiLong
+        operator: ">"
+        value: gmiShort
+      - field: "ccpLong - ccpShort"
+        operator: "!="
+        value: "gmiLong - gmiShort"
+    output:
+      field: Balance
+      value: "Partial"
+    comment: "Partial: For house accounts with a net long exposure (ccpLong > ccpShort and gmiLong > gmiShort), the net positions differ in size. The CCP and GMI are in the same direction (net long) but do not fully agree on quantity, indicating a partial mismatch."
+
+  - ruleId: BAL_Partial_House_Short
+    name: "Balance Partial – Net Short Mismatch (House)"
+    conditions:
+      - field: accountType
+        operator: "="
+        value: "House"
+      - field: ccpLong
+        operator: "<"
+        value: ccpShort
+      - field: gmiLong
+        operator: "<"
+        value: gmiShort
+      - field: "ccpLong - ccpShort"
+        operator: "!="
+        value: "gmiLong - gmiShort"
+    output:
+      field: Balance
+      value: "Partial"
+    comment: "Partial: For house accounts with a net short exposure (ccpShort > ccpLong and gmiShort > gmiLong), the net positions differ. CCP and GMI both show net short, but the quantities do not match exactly, indicating a partial mismatch."
+
+  - ruleId: BAL_Break1
+    name: "Balance Break – Missing GMI Long"
+    conditions:
+      - field: ccpLong
+        operator: ">"
+        value: 0
+      - field: gmiLong
+        operator: "="
+        value: 0
+    output:
+      field: Balance
+      value: "Break"
+    comment: "Break: CCP reports exercised long position(s) with no corresponding long position in GMI. (Long position at CCP is entirely unrecorded internally.)"
+
+  - ruleId: BAL_Break2
+    name: "Balance Break – Missing GMI Short"
+    conditions:
+      - field: ccpShort
+        operator: ">"
+        value: 0
+      - field: gmiShort
+        operator: "="
+        value: 0
+    output:
+      field: Balance
+      value: "Break"
+    comment: "Break: CCP reports assigned short position(s) with no corresponding short position in GMI. (Short assignments at CCP are not recorded internally.)"
+
+  - ruleId: BAL_Break3
+    name: "Balance Break – Missing CCP Long"
+    conditions:
+      - field: gmiLong
+        operator: ">"
+        value: 0
+      - field: ccpLong
+        operator: "="
+        value: 0
+    output:
+      field: Balance
+      value: "Break"
+    comment: "Break: GMI shows an exercised long position with no corresponding exercise at CCP. (Internal system recorded a long exercise that did not occur at the CCP.)"
+
+  - ruleId: BAL_Break4
+    name: "Balance Break – Missing CCP Short"
+    conditions:
+      - field: gmiShort
+        operator: ">"
+        value: 0
+      - field: ccpShort
+        operator: "="
+        value: 0
+    output:
+      field: Balance
+      value: "Break"
+    comment: "Break: GMI shows an assigned short position with no corresponding assignment at CCP. (Internal system recorded a short assignment that did not occur at the CCP.)"
+
+  - ruleId: BAL_Break5
+    name: "Balance Break – Net Direction Mismatch (House)"
+    conditions:
+      - field: accountType
+        operator: "="
+        value: "House"
+      - field: ccpLong
+        operator: ">"
+        value: ccpShort
+      - field: gmiLong
+        operator: "<"
+        value: gmiShort
+    output:
+      field: Balance
+      value: "Break"
+    comment: "Break: House account shows opposite net directions between CCP and GMI (e.g., CCP net long vs GMI net short). The overall exercise/assignment direction is inconsistent, indicating a break."
+
+  - ruleId: BAL_Break6
+    name: "Balance Break – Net Direction Mismatch (House) 2"
+    conditions:
+      - field: accountType
+        operator: "="
+        value: "House"
+      - field: ccpLong
+        operator: "<"
+        value: ccpShort
+      - field: gmiLong
+        operator: ">"
+        value: gmiShort
+    output:
+      field: Balance
+      value: "Break"
+    comment: "Break: House account shows opposite net directions between CCP and GMI (e.g., CCP net short vs GMI net long). This conflicting net exposure is a break that must be investigated."
+
+  - ruleId: BOOK_Full
+    name: "Booking – No Action Needed"
+    conditions:
+      - field: Balance
+        operator: "="
+        value: "Full"
+    output:
+      field: Booking
+      value: "No booking required"
+    comment: "No further action is required: all CCP exercises/assignments are fully reflected in GMI (balances are full)."
+
+  - ruleId: BOOK_Partial_Long
+    name: "Booking – Allocate Unbooked Exercises"
+    conditions:
+      - field: Balance
+        operator: "="
+        value: "Partial"
+      - field: ccpLong
+        operator: ">"
+        value: gmiLong
+    output:
+      field: Booking
+      value: "Allocate missing exercised positions"
+    comment: "Some exercised (long) positions at CCP are not booked in GMI. The difference (ccpLong minus gmiLong) should be allocated/booked in GMI for the client or house account."
+
+  - ruleId: BOOK_Partial_Short
+    name: "Booking – Allocate Unbooked Assignments"
+    conditions:
+      - field: Balance
+        operator: "="
+        value: "Partial"
+      - field: ccpShort
+        operator: ">"
+        value: gmiShort
+    output:
+      field: Booking
+      value: "Allocate missing assigned positions"
+    comment: "Some assigned (short) positions at CCP are not recorded in GMI. The difference (ccpShort minus gmiShort) should be assigned/allocated in the internal system accordingly."
+
+  - ruleId: BOOK_Partial_ExtraLong
+    name: "Booking – Adjust Excess Exercise Booking"
+    conditions:
+      - field: Balance
+        operator: "="
+        value: "Partial"
+      - field: gmiLong
+        operator: ">"
+        value: ccpLong
+    output:
+      field: Booking
+      value: "Adjust excess long bookings"
+    comment: "GMI shows more exercised long positions than CCP. The excess exercise recorded internally (gmiLong minus ccpLong) should be corrected (cancel or adjust the over-booked long positions)."
+
+  - ruleId: BOOK_Partial_ExtraShort
+    name: "Booking – Adjust Excess Assignment Booking"
+    conditions:
+      - field: Balance
+        operator: "="
+        value: "Partial"
+      - field: gmiShort
+        operator: ">"
+        value: ccpShort
+    output:
+      field: Booking
+      value: "Adjust excess short bookings"
+    comment: "GMI shows more assigned short positions than CCP. The excess assignment recorded internally (gmiShort minus ccpShort) should be corrected (cancel or adjust the over-booked short positions)."
+
+  - ruleId: BOOK_Break
+    name: "Booking – Break Resolution"
+    conditions:
+      - field: Balance
+        operator: "="
+        value: "Break"
+    output:
+      field: Booking
+      value: "Investigate and manual booking"
+    comment: "A break in positions requires investigation and manual intervention. Any missing or mismatched exercises/assignments must be identified and booked or adjusted manually to resolve the discrepancy."
