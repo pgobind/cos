@@ -1,0 +1,51 @@
+VP nomibnations- 
+VP‑2 Promotion — Nomination Form
+1) Candidate Platform / Scope of Role
+•	Principal Architect & SME, Post‑Trade Finance Services (PFS). Sets technical direction for reconciliation, house‑balancing, and GL automation across Clearing, Securities Services, and Corporate Finance.
+•	Platform Owner – Seal 2.0. Event‑driven reconciliation service processing ≈ 7 M trades / positions per day via 14 micro‑services on AWS (Lambda, SQS, Glue, EMR, Athena, Transfer Family). Rules are fully YAML‑configurable, allowing 2‑/3‑way balancers to be deployed in hours, not weeks.
+•	Delivery Lead – Encore House‑Balancing (live) & Deliveries Automation (in build). Encore balances books for 30 regions; Deliveries Automation extends balancing to GMI, Intraday & CCP, including ITS‑Book exercise/assign flows.
+•	Cross‑LOB Influencer. Co‑chairs the PFS Architecture Design Forum and moderates the PFS Collaboration Chat (≈ 250 members), accelerating AWS best‑practice adoption and unblocking day‑to‑day issues firm‑wide.
+2) Candidate Readiness
+Business Results (last 12–18 months)
+Initiative	Outcome & Quantified Impact
+Seal 2.0 extensions	• Retired 3 legacy Cobalt modules; run‑the‑bank spend down US $1.3 M p.a.
+• Month‑end close cut from 3 h → 45 min.
+Encore (completed)	• House‑balancing for ~30 regions; integrates MQ, Kafka, iRecs, DATx, date‑alert mailer.
+• React UI with live logs, downloadable diagnostics, Rerun / Cancel.
+• MTTR lowered 40 min → < 8 min; 0 Sev‑1 incidents in 10 months.
+Deliveries Automation (in flight)	• UI wireframe & rule engine demoed; rated 4.8 / 5 usefulness by Ops & Finance.
+• Bedrock Gen‑AI rule assistant prototypes show ≈ 30 % faster onboarding.
+Platform modernisation	First in CDT to implement kerberisation, NADC migration, and Spring Cloud Gateway forward‑proxy patterns; templates now reused across PFS.
+Cost stewardship	EMR & Glue tuning lowered batch compute expense ≈ 28 % while sustaining SLA.
+
+Client / Customer / Stakeholder
+•	Controllers & Ops – Reconciliation screens reduced break‑research time from 2 days → ≈ 2 h.
+•	Data contracts – Aligned Nessie (GMI), MDL, IRCes and OTC Ops; > 99.9 % reconciliation accuracy first month.
+•	Regulatory alignment – Earlier EMIR reporting design and Control‑M automations ensured timely submissions across 14 jurisdictions.
+3) Teamwork & Leadership
+Knowledge Sharing: Ran 9 AWS workshops (Lambda, Glue, EMR, Transfer Family, CI/CD) for 50+ engineers; post‑quiz scores up ≈ 22 %.
+Collaboration & Support: In PFS chat, answered 150+ queries and resolved ≈ 25 critical blockers (network ACLs, IAM auth, cost guardrails).
+Project Bootstrapping: Set up net‑new projects (repos, Jules pipelines, GAP/GKP, GOS PAVE) and coached teams on secure deployment patterns.
+Mentoring & Culture: Guides 4 Associates (2 on VP track); launched “Women in Cloud FinTech” brown‑bag – attendance up 5× in 6 months.
+(Formal people‑manager responsibility not yet assigned; leads virtual squads of 15–20 engineers.)
+4) Risk, Controls & Conduct
+•	Preventive controls – Automated ACM rotation, Param‑Store secrets, signed Git releases; 0 code‑to‑cloud violations FY25.
+•	Audit & Recovery – Encore UI actions (Rerun/Cancel) include immutable audit trail; structured logs retained 7 days for search/forensics.
+•	Migration discipline – GAP/GKP & GOS PAVE evidence packs completed on schedule; praised by Production Management.
+5) Additional Contributions
+•	AI Tooling – Prototyped YAML rule scaffolding & test‑case generators (SmartSDLC hackathon, bronze); early tests indicate ≈ 30 % productivity gain.
+•	Community anchor – Shares scripts and how‑to docs for PFS connectivity, MQ/Kafka setup, and AWS networking.
+6) Development Areas
+•	Executive storytelling – Sharpen cost‑avoidance / risk‑reduction narrative for C‑suite.
+•	Formal people management – Transition virtual‑team leadership success into a line‑manager role (enrol in Inspiring Leader).
+•	AI governance – Deepen model‑risk controls as Bedrock tooling moves to production.
+7) Key FY25 Stats
+KPI	Value
+Trades / positions reconciled daily	≈ 7 M
+Regions balanced (Encore)	30
+Annual run‑rate savings	US $1.3 M
+Sev‑1 incidents post‑go‑live	0
+AWS workshops delivered	9
+Engineers upskilled	50+
+PFS chat queries answered	150+
+
