@@ -1,0 +1,58 @@
+## Prompt for Claude
+You are an expert Spark developer specializing in building robust, configuration-driven financial reconciliation systems. Your task is to provide a complete, end-to-end solution for a complex position reconciliation problem.
+
+The solution must be presented in three distinct parts:
+
+A complete YAML configuration file containing all business rules.
+
+A complete, runnable Java/Spark application that dynamically parses and executes the rules from the YAML file.
+
+The final, expected console output from running the Java application, showing the two required result tables.
+
+Here are the detailed requirements:
+
+1. Architectural Requirements:
+
+The system must separate business logic from execution logic. Rules will be defined exclusively in a YAML file, and the Java/Spark code will act as an engine to execute them.
+
+The engine must produce two distinct outputs:
+
+A CCP Balance Status table, with one row per original CCP position, showing its final status (Full, Partial, Break) and a reason for any breaks.
+
+A GMI Allocations table, showing the detailed exercise and assign amounts calculated for each underlying GMI account.
+
+2. YAML File Requirements (recon-rules.yml):
+
+The YAML must define rules for two primary scenarios: House accounts and Non-House (Client) accounts.
+
+For House Accounts: The logic must handle comparing a single netted CCP position against multiple gross (long and short) GMI positions. A key requirement is that a single House reconciliation can result in both exercise and assign allocations simultaneously.
+
+For Non-House (Client) Accounts: The logic will compare gross CCP positions against gross GMI positions.
+
+The YAML must explicitly define rules for the following use cases for both scenarios:
+
+Full Match: When CCP and GMI positions align perfectly.
+
+Full Cover (GMI Surplus): When GMI positions are more than enough to cover the CCP requirement. The status is Full, and allocations must be calculated on a pro-rata (weighted average) basis.
+
+Partial Match (GMI Shortfall): When GMI positions are insufficient. The status is Partial, and all available GMI quantity should be allocated.
+
+One-Sided Breaks: The most critical rule. If the overall position is a break but one side (e.g., the short side) is fully matched or covered, the status must be Break, but the system must still calculate and show the allocations for the covered side.
+
+Total Break: A final catch-all for when no part of the position can be reconciled.
+
+3. Java/Spark Application Requirements:
+
+The application must be written in Java using Apache Spark.
+
+It must start by parsing the recon-rules.yml file into Java objects.
+
+It must include comprehensive embedded sample data that is specifically designed to trigger every single use case listed above for both House and Client accounts.
+
+The core logic should be in a dynamic UDF. This UDF must not contain hardcoded business logic; instead, it should iterate through the parsed rules from the YAML to find the matching case and apply its formulas.
+
+The code must correctly aggregate GMI sub-accounts for each CCP position before applying the rules.
+
+The final step must be to generate and display the two distinct output tables as specified in the architectural requirements.
+
+Please provide the complete solution, starting with the YAML file, followed by the Java code, and concluding with the exact console output.
