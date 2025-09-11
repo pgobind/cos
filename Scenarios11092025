@@ -1,0 +1,111 @@
+# =============================================================================
+# COMPLETE RECONCILIATION RULE BOOK (FINAL VALIDATED VERSION)
+# =============================================================================
+scenarios:
+  # ---------------------------------------------------------------------------
+  # SCENARIO 1: House Account Reconciliation
+  # ---------------------------------------------------------------------------
+  - name: "House Account Net-to-Gross Reconciliation"
+    matchCriteria: "account.type == 'HOUSE'"
+    cases:
+      - name: "Use Case: Full Match - Net Positions Align"
+        when: "Net_CCP_Position == Net_GMI_Position && Net_CCP_Position != 0"
+        then:
+          balanceStatus: "Full"
+          allocations:
+            exercise: "gmi.long_quantity * (ccp.long_quantity / Total_GMI_Long)"
+            assign: "gmi.short_quantity * (ccp.short_quantity / Total_GMI_Short)"
+
+      - name: "Use Case: Full Cover - GMI Surplus"
+        when: "abs(Net_CCP_Position) < abs(Net_GMI_Position) && signum(Net_CCP_Position) == signum(Net_GMI_Position)"
+        then:
+          balanceStatus: "Full"
+          allocations:
+            exercise: "gmi.long_quantity * (ccp.long_quantity / Total_GMI_Long)"
+            assign: "gmi.short_quantity * (ccp.short_quantity / Total_GMI_Short)"
+
+      - name: "Use Case: Partial Match - GMI Shortfall"
+        when: "abs(Net_CCP_Position) > abs(Net_GMI_Position) && signum(Net_CCP_Position) == signum(Net_GMI_Position)"
+        then:
+          balanceStatus: "Partial"
+          allocations:
+            exercise: "gmi.long_quantity"
+            assign: "gmi.short_quantity"
+            
+      - name: "Use Case: Break - Long Side Mismatch, Short Side Covered"
+        when: "Net_CCP_Position != Net_GMI_Position && ccp.short_quantity <= Total_GMI_Short"
+        then:
+          balanceStatus: "Break"
+          break_reason: "Break on Net Long Position"
+          allocations:
+            exercise: "0"
+            assign: "gmi.short_quantity * (ccp.short_quantity / Total_GMI_Short)"
+
+      - name: "Use Case: Break - Short Side Mismatch, Long Side Covered"
+        when: "Net_CCP_Position != Net_GMI_Position && ccp.long_quantity <= Total_GMI_Long"
+        then:
+          balanceStatus: "Break"
+          break_reason: "Break on Net Short Position"
+          allocations:
+            exercise: "gmi.long_quantity * (ccp.long_quantity / Total_GMI_Long)"
+            assign: "0"
+
+      - name: "Use Case: Break - Total Mismatch"
+        when: "true"
+        then:
+          balanceStatus: "Break"
+          break_reason: "Break on both Long and Short Positions"
+
+  # ---------------------------------------------------------------------------
+  # SCENARIO 2: Non-House (Client) Account Reconciliation
+  # ---------------------------------------------------------------------------
+  - name: "Non-House Gross-to-Gross Reconciliation"
+    matchCriteria: "account.type != 'HOUSE'"
+    cases:
+      - name: "Use Case: Full Match"
+        when: "ccp.long_quantity == Total_GMI_Long && ccp.short_quantity == Total_GMI_Short"
+        then:
+          balanceStatus: "Full"
+          allocations:
+            exercise: "gmi.long_quantity"
+            assign: "gmi.short_quantity"
+      
+      - name: "Use Case: Full Cover - GMI Surplus"
+        when: "ccp.long_quantity < Total_GMI_Long || ccp.short_quantity < Total_GMI_Short"
+        then:
+          balanceStatus: "Full"
+          allocations:
+            exercise: "gmi.long_quantity * (ccp.long_quantity / Total_GMI_Long)"
+            assign: "gmi.short_quantity * (ccp.short_quantity / Total_GMI_Short)"
+
+      - name: "Use Case: Partial Match - GMI Shortfall"
+        when: "ccp.long_quantity > Total_GMI_Long || ccp.short_quantity > Total_GMI_Short"
+        then:
+          balanceStatus: "Partial"
+          allocations:
+            exercise: "gmi.long_quantity"
+            assign: "gmi.short_quantity"
+
+      - name: "Use Case: Break - Long Mismatch, Short Match"
+        when: "ccp.long_quantity != Total_GMI_Long && ccp.short_quantity == Total_GMI_Short"
+        then:
+          balanceStatus: "Break"
+          break_reason: "Break on Long Position"
+          allocations:
+            exercise: "0"
+            assign: "gmi.short_quantity"
+
+      - name: "Use Case: Break - Short Mismatch, Long Match"
+        when: "ccp.long_quantity == Total_GMI_Long && ccp.short_quantity != Total_GMI_Short"
+        then:
+          balanceStatus: "Break"
+          break_reason: "Break on Short Position"
+          allocations:
+            exercise: "gmi.long_quantity"
+            assign: "0"
+
+      - name: "Use Case: Break - Total Gross Mismatch"
+        when: "true"
+        then:
+          balanceStatus: "Break"
+          break_reason: "Gross positions do not match"
