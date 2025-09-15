@@ -1,0 +1,195 @@
+import lombok.Getter;
+import lombok.Setter;
+import java.time.OffsetDateTime;
+import java.util.List;
+
+@Getter
+@Setter
+public class CcpMetadata {
+
+    private Long id;
+    private String ccpFileIdentifier;
+    private List<String> exchangeMccodes;
+    private String gmiExchangeCode;
+    private OffsetDateTime softCutoff;
+    private OffsetDateTime hardCutoff;
+    private String ccp; // e.g., "ICE"
+    private String subDetails; // e.g., "GPM"
+    private String productClass; // e.g., "Equities"
+    private OffsetDateTime contributionTime;
+
+    // Constructors can remain as they are useful for object creation
+    public CcpMetadata() {
+    }
+
+    public CcpMetadata(String ccpFileIdentifier, List<String> exchangeMccodes, String gmiExchangeCode, OffsetDateTime softCutoff, OffsetDateTime hardCutoff, String ccp, String subDetails, String productClass, OffsetDateTime contributionTime) {
+        this.ccpFileIdentifier = ccpFileIdentifier;
+        this.exchangeMccodes = exchangeMccodes;
+        this.gmiExchangeCode = gmiExchangeCode;
+        this.softCutoff = softCutoff;
+        this.hardCutoff = hardCutoff;
+        this.ccp = ccp;
+        this.subDetails = subDetails;
+        this.productClass = productClass;
+        this.contributionTime = contributionTime;
+    }
+    
+    @Override
+    public String toString() {
+        return "CcpMetadata{" +
+                "id=" + id +
+                ", ccpFileIdentifier='" + ccpFileIdentifier + '\'' +
+                ", exchangeMccodes=" + exchangeMccodes +
+                ", gmiExchangeCode='" + gmiExchangeCode + '\'' +
+                ", softCutoff=" + softCutoff +
+                ", hardCutoff=" + hardCutoff +
+                ", ccp='" + ccp + '\'' +
+                ", subDetails='" + subDetails + '\'' +
+                ", productClass='" + productClass + '\'' +
+                ", contributionTime=" + contributionTime +
+                '}';
+    }
+}
+
+import lombok.Getter;
+import lombok.Setter;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+
+@Getter
+@Setter
+public class CcpProcessingException {
+
+    private Long id;
+    private LocalDate cobDate;
+    private String fileIdentifier;
+    private String mccode;
+    private String errorCode;
+    private String errorMessage;
+    private OffsetDateTime exceptionTimestamp;
+
+    // Constructors
+    public CcpProcessingException() {
+    }
+
+    public CcpProcessingException(LocalDate cobDate, String fileIdentifier, String mccode, String errorCode, String errorMessage) {
+        this.cobDate = cobDate;
+        this.fileIdentifier = fileIdentifier;
+        this.mccode = mccode;
+        this.errorCode = errorCode;
+        this.errorMessage = errorMessage;
+        this.exceptionTimestamp = OffsetDateTime.now();
+    }
+    
+    @Override
+    public String toString() {
+        return "CcpProcessingException{" +
+                "id=" + id +
+                ", cobDate=" + cobDate +
+                ", fileIdentifier='" + fileIdentifier + '\'' +
+                ", mccode='" + mccode + '\'' +
+                ", errorCode='" + errorCode + '\'' +
+                ", errorMessage='" + errorMessage + '\'' +
+                ", exceptionTimestamp=" + exceptionTimestamp +
+                '}';
+    }
+}
+
+import lombok.Getter;
+import lombok.Setter;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+
+@Getter
+@Setter
+public class FileAuditSummary {
+
+    private Long id;
+    private String fileName;
+    private String exchangeMccode;
+    private String legalEntity;
+    private String instrumentId;
+    private BigDecimal longPosition;
+    private BigDecimal shortPosition;
+    private BigDecimal netPosition;
+    private OffsetDateTime createdTimestamp;
+
+    // Constructors
+    public FileAuditSummary() {
+    }
+
+    public FileAuditSummary(String fileName, String exchangeMccode, String legalEntity, String instrumentId, BigDecimal longPosition, BigDecimal shortPosition, BigDecimal netPosition) {
+        this.fileName = fileName;
+        this.exchangeMccode = exchangeMccode;
+        this.legalEntity = legalEntity;
+        this.instrumentId = instrumentId;
+        this.longPosition = longPosition;
+        this.shortPosition = shortPosition;
+        this.netPosition = netPosition;
+    }
+    
+    @Override
+    public String toString() {
+        return "FileAuditSummary{" +
+                "id=" + id +
+                ", fileName='" + fileName + '\'' +
+                ", exchangeMccode='" + exchangeMccode + '\'' +
+                ", legalEntity='" + legalEntity + '\'' +
+                ", instrumentId='" + instrumentId + '\'' +
+                ", longPosition=" + longPosition +
+                ", shortPosition=" + shortPosition +
+                ", netPosition=" + netPosition +
+                ", createdTimestamp=" + createdTimestamp +
+                '}';
+    }
+}
+
+CREATE TABLE file_audit_summary (
+    id SERIAL PRIMARY KEY,
+    file_name VARCHAR(255) NOT NULL,
+    exchange_mccode VARCHAR(50) NOT NULL,
+    legal_entity VARCHAR(100),
+    instrument_id VARCHAR(255) NOT NULL,
+    long_position NUMERIC(19, 4) DEFAULT 0.0, -- Using NUMERIC for precision with financial data
+    short_position NUMERIC(19, 4) DEFAULT 0.0,
+    net_position NUMERIC(19, 4) DEFAULT 0.0,
+    created_timestamp TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Optional: Create a composite index for efficient querying
+CREATE INDEX idx_audit_summary_lookup ON file_audit_summary(file_name, exchange_mccode, instrument_id);
+
+
+CREATE TABLE ccp_processing_exceptions (
+    id SERIAL PRIMARY KEY,
+    cob_date DATE NOT NULL,
+    file_identifier VARCHAR(255) NOT NULL,
+    mccode VARCHAR(50),
+    error_code VARCHAR(100),
+    error_message TEXT,
+    exception_timestamp TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Optional: Create an index for querying exceptions by file or date
+CREATE INDEX idx_exceptions_file_identifier ON ccp_processing_exceptions(file_identifier);
+CREATE INDEX idx_exceptions_cob_date ON ccp_processing_exceptions(cob_date);
+
+CREATE TABLE ccp_metadata (
+    id SERIAL PRIMARY KEY,
+    ccp_file_identifier VARCHAR(255) NOT NULL,
+    exchange_mccodes TEXT[] NOT NULL, -- PostgreSQL specific array type for list of strings
+    gmi_exchange_code VARCHAR(50),
+    soft_cutoff TIMESTAMPTZ, -- Timestamp with time zone
+    hard_cutoff TIMESTAMPTZ, -- Timestamp with time zone
+    ccp VARCHAR(100),
+    sub_details VARCHAR(100),
+    product_class VARCHAR(100),
+    contribution_time TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Optional: Create an index for faster lookups on the file identifier
+CREATE INDEX idx_ccp_metadata_file_identifier ON ccp_metadata(ccp_file_identifier);
+
+
