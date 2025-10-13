@@ -1,0 +1,57 @@
+INSERT INTO encore_deliveries_ccp_metadata (
+    id,
+    version,
+    ccp_file_identifier,
+    exchange_mic_code,
+    ccp_name,
+    gmi_exchange_code,
+    region,
+    house_account,
+    soft_cutoff,
+    hard_cutoff,
+    sub_details,
+    product_class,
+    position_source,
+    oi_file_type,
+    gmi_schema,
+    inserted_ts,
+    updated_ts,
+    approved_ts,
+    status,
+    approval_comment,
+    submitter_comment,
+    update_by_user,
+    inserted_by_user,
+    approved_by_user,
+    is_latest,
+    is_live,
+    escalation_contact
+) VALUES (
+    gen_random_uuid(),                     -- id (if UUID)
+    1,                                     -- version
+    'ICE_20251013_1',                      -- ccp_file_identifier
+    'XICE',                                -- exchange_mic_code
+    'ICE Clear Europe',                    -- ccp_name
+    'ICEU',                                -- gmi_exchange_code
+    'EMEA',                                -- region
+    'HOUSE123',                            -- house_account
+    '2025-10-13 18:00:00',                 -- soft_cutoff
+    '2025-10-13 19:00:00',                 -- hard_cutoff
+    'SUB_DETAIL_SAMPLE',                   -- sub_details
+    'FUTURES',                             -- product_class
+    'GMI',                                 -- position_source
+    'CSV',                                 -- oi_file_type
+    'ICE_SCHEMA_V1',                       -- gmi_schema
+    NOW(),                                 -- inserted_ts
+    NOW(),                                 -- updated_ts
+    NULL,                                  -- approved_ts
+    'PENDING',                             -- status
+    NULL,                                  -- approval_comment
+    'Initial load for ICE CCP',            -- submitter_comment
+    'gobindp',                             -- update_by_user
+    'gobindp',                             -- inserted_by_user
+    NULL,                                  -- approved_by_user
+    TRUE,                                  -- is_latest
+    TRUE,                                  -- is_live
+    'ops-team@corp.com'                    -- escalation_contact
+);
