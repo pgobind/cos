@@ -1,0 +1,31 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: reg-jpmm-ui-manifest
+          predicates:
+            - Path=/reg-jpmm-ui/manifest.json
+          # send to the same app that serves the static folder
+          uri: http://localhost:${server.port}
+          filters:
+            - DedupeResponseHeader=Content-Type, RETAIN_FIRST
+            - AddResponseHeader=Content-Type, application/manifest+json
+spring:
+  cloud:
+    gateway:
+      default-filters:
+        - RemoveResponseHeader=Content-Security-Policy
+        - AddResponseHeader=Content-Security-Policy, "script-src 'self' 'sha256-FV0ANcwhXkdOa36Hgqm4hnbUJ+On2E0MzLVAREJULU='; object-src 'none'; base-uri 'self'"
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: reg-jpmm-ui-manifest
+          predicates:
+            - Path=/reg-jpmm-ui/manifest.json
+          # send to the same app that serves the static folder
+          uri: http://localhost:${server.port}
+          filters:
+            - DedupeResponseHeader=Content-Type, RETAIN_FIRST
+            - AddResponseHeader=Content-Type, application/manifest+json
+- AddResponseHeader=Content-Security-Policy, "script-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'"
