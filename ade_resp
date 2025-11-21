@@ -1,0 +1,10 @@
+That context clarifies the nuance perfectly—it's about handling applications with varying criticality *within* the single, shared cluster.
+
+Here is the revised, final set of crisp bullet points incorporating the variable RTO requirement:
+
+  * **Shared Clusters are Recommended (Efficiency):** AWS encourages using one large cluster per environment/account for better resource utilization and reduced operational overhead, which is the default JPMC approach.
+      * **Link:** [AWS Docs: A single Amazon ECS cluster can run multiple services](https://www.google.com/search?q=https://docs.aws.com/AmazonECS/latest/developerguide/clusters.html)
+  * **VPC and Network Isolation is Fixed:** VPCs and subnets are **pre-provisioned** by JPMC's platform. Creating an extra cluster in the same VPC adds zero network isolation, as changes require modifying the AWS account request process.
+  * **Isolation is Service-Level (Security):** Application security is achieved robustly **within** the shared cluster using granular Task IAM Roles and Security Groups, not by multiplying clusters.
+      * **Link:** [AWS ECS Security Model](https://www.google.com/search?q=https://docs.aws.com/AmazonECS/latest/developerguide/security_iam.html)
+  * **Blast Radius and Variable RTO (Agreement):** We agree that a shared cluster increases the blast radius. For applications with **different RTOs** running in the same ECS cluster, the standard mitigation is to use **different scaling policies** and **placement constraints** to prioritize critical services. Services with extremely low RTO requirements that cannot tolerate the shared blast radius would be better suited for a dedicated cluster or a separate account, justified as an exception via the account request process.
