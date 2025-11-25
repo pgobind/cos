@@ -1,0 +1,24 @@
+const express = require('express');
+const { createProxyMiddleware } = require('http-proxy-middleware');
+
+const app = express();
+
+// Proxy everything from localhost:3000 → smart-sdlc.replit.app
+app.use(
+  '/',
+  createProxyMiddleware({
+    target: 'https://smart-sdlc.replit.app',
+    changeOrigin: true,
+    secure: false,          // ignore HTTPS cert issues if any
+    ws: true,               // proxy websockets too (if used)
+    onProxyReq(proxyReq, req, res) {
+      // Optional: log proxied URL
+      console.log(`→ ${req.method} ${req.url}`);
+    },
+  })
+);
+
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Proxy running at http://localhost:${PORT} → https://smart-sdlc.replit.app`);
+});
