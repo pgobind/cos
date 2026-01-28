@@ -1,0 +1,9 @@
+1. What does Smart SDLC do?
+Smart SDLC is an AI-assisted SDLC co-pilot that aligns leadership intent, engineering design, delivery execution, and operational outcomes—so teams build the right thing, the right way, with continuity across the lifecycle and better consumer outcomes.
+2. What lifecycle stage are we in?
+We are in an early prototype / validation stage, proving cross-role value (leadership, engineering, delivery, ops) and end-to-end workflows before enterprise hardening.
+3. How many systems are using it? What is needed for widespread adoption?
+Currently piloted on 1–2 systems; scaling requires security and platform hardening, standard integrations (JIRA, Git, Confluence), and role-based onboarding for engineering, delivery, and operations teams.
+4. Feature roadmap ahead
+Near-term: deepen role-based experiences for leadership, engineers, delivery and ops with traceability and governance;
+Mid-term: enterprise integrations, metrics-driven insights, and consumer-impact feedback loops.
