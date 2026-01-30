@@ -1,0 +1,8 @@
+Yes — we’re designing this as Control-as-a-Service, fully API-exposed with Maker/Checker. We can support multiple invocation modes:
+
+Validate/Preview (dry-run): client/Ops can run an eligibility check and see expected results without committing or triggering downstream steps.
+
+Execute: run the full end-to-end control flow after approval.
+
+Step-level control / stop-after: optionally stop after producing output, or proceed only to specific actions (e.g., book in GMI) based on user intent.
+This gives clients the flexibility to “check” first, then execute when ready, with auditability and idempotent behavior.
