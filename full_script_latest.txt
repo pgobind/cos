@@ -1,0 +1,607 @@
+Below is a high‑level guide for rehearsing each segment. It tells you when to bring in SDLC concepts, who speaks, and the intended effect on your audience. This should help the three presenters stay in sync and hit all of the narrative beats that will resonate with senior technology and business leaders at JPMC.
+
+Time & slide	Who speaks & key SDLC themes
+Pre‑slide warm‑up (0:00‑0:50)	A sets the tone, then invites a JPMC‑specific poll: “Who here must deliver software rapidly while meeting J.P. Morgan’s rigorous risk, control and compliance requirements across the SDLC?” This recognises that DevUp focuses on resilience and control.
+Slide 1 – The future of software delivery (0:50‑3:15)	A frames the Jurassic Park metaphor and draws a parallel to how big ideas at JPMC often start as a vision. B states the thesis: delivery is an ecosystem, and ecosystems fail when complexity outruns coherence. Emphasise that tribal knowledge still drives many decisions, which is risky in a regulated environment.
+Slide 2 – The invisible tax of scale (3:15‑7:00)	A and B describe how small features pull in many teams; in a bank this also triggers security, architecture and compliance reviews. C as the skeptic notes that the next tax is context: key people become bottlenecks. Emphasise how this coordination trap limits speed and increases risk.
+Slide 3 – The gap & war‑room scenario (7:00‑12:30)	Walk through Jira/Git/CI gaps. C runs a war‑room simulation: ask which question (approval, blast radius, purpose) executives ask first during an incident. Use this to illustrate that no current tool can answer quickly. The takeaway should be that in an environment like JPMC, resilience and auditability must be built into the SDLC.
+Slide 4 – Strategic pivot: shift left (12:30‑15:00)	B introduces the pivot: capture intent early, synthesize artefacts and keep them connected. Encourage the audience to admit if intent lives “in someone’s head,” which is unacceptable in a regulated bank.
+Slide 5 – What Smart SDLC is (15:00‑18:00)	Define Smart SDLC as an intelligence layer that connects the lifecycle end‑to‑end, provides role‑aware context and moves work forward using evidence. Stress that it connects JPMC’s existing tools without replacing them. Let C voice the concerns (extra governance, dashboards), then dispel them with a myth/reality poll.
+Slide 6 – AI engine (18:00‑23:30)	Outline how AI synthesises requirements, architecture artefacts, scaffolding, tests and evidence packs. Invite the audience to shout their AI concerns (hallucination, security, audit). Reassure them that governance remains and that AI is trained on controlled sources.
+Slides 7‑8 – Delivery graph & intelligence loop (23:30‑28:15)	Show that every piece of work becomes a node in a graph linking intent, artefacts, approvals, evidence and runtime signals. Demonstrate the continuous loop that captures intent, synthesises artefacts and verifies against intent, eliminating floating tasks.
+Slides 9‑13 – Value for product, delivery leads, architecture, developers & ops (28:15‑37:00)	Rotate through the roles: A speaks to product managers about eliminating surprise dependencies; B focuses on delivery leads and evidence‑driven flow; C explains how architecture drift is detected early; A shows developers how intent‑aware context reduces blockers; C tells ops leaders that root‑cause analysis starts with why and that question should be answerable in seconds.
+Slide 14 – Blueprint (37:00‑40:00)	C explains that the solution is not a dashboard but a governed reasoning layer. B describes the experience layer, intelligence layer, graph and eventing while emphasising that systems of record like Jira and Git remain the source of truth.
+Slide 15 – Roadmap (40:00‑41:30)	B offers an A/B/C poll on whether to prioritise the delivery graph, evidence packs or drift detection first, then relates the sequence back to the roadmap.
+Slide 16 – Measurable impact (41:30‑43:00)	A shares benchmarks: 25–35 % rework reduction, 20–30 % coordination cost reduction, 15–25 % faster cycle time, and 40–60 % faster onboarding. Ask which matters most to their organisation.
+Slide 17 – Risk mitigation (43:00‑44:15)	C debunks myths: Smart SDLC doesn’t replace talent; it automates memory and synthesis, reducing busywork. It doesn’t add governance overhead; it makes compliance easier. Lead a final myth/reality call.
+Slide 18 – Key takeaway & closing (44:15‑45:00)	The trio closes with the line “Smart SDLC doesn’t eliminate complexity, it makes sure complexity never outruns coherence,” then leaves the room with a reflective question: where does success still depend on people remembering? Pause for several seconds before opening for questions.
+Updated script
+
+I’ve updated the teleprompter script to incorporate the J.P. Morgan–specific opening poll and to ensure the story stays within 45 minutes. You can rehearse by printing the script and following the time cues and stage directions. The file is available here:
+
+45‑Minute Smart SDLC Presentation Script
+Cast and Stage Contract
+
+Roles
+
+Speaker A – Vision/Strategy/Story: opens and closes each section, anchors the Jurassic Park narrative and makes the business case.
+
+Speaker B – Delivery/Operations/Flow: explains how things work, owns the clicker, and grounds the talk in operational reality.
+
+Speaker C – Skeptic/Architecture/Risk: plays the tough CTO/Ops leader, voicing the concerns the audience may have.
+
+Audience rhythm
+
+Include one interaction roughly every two minutes (hands, fingers, quick poll, one‑word shout).
+
+Always follow the pattern: Ask → Pause → Harvest (“I’m seeing…”) → Connect back to the slide.
+
+When the room is quiet, invite people to respond by nodding or showing fingers 1–5 instead of shouting.
+
+Timing rule
+
+If you’re running long, cut any line marked [OPTIONAL]; the narrative still holds together.
+
+Pre‑Slide Warm‑Up (00:00–00:50)
+
+A [center, warm, one step forward]
+
+“Good morning/afternoon. We’ve got both tech and business leaders here, so let’s make this interactive—not a monologue.”
+
+A — Interaction #0 (hands)
+
+“Quick show of hands: who here must deliver software rapidly while meeting J.P. Morgan’s rigorous risk, control and compliance requirements across the SDLC?”
+
+Pause four seconds and smile.
+
+“Okay—so… everyone.”
+
+B [at podium, clicker ready]
+
+“In 45 minutes we’ll share one idea: how delivery can stay fast without turning into hero culture.”
+
+C [short, confident]
+
+“And we’ll do it using a story you already know.”
+
+Slide 1 — The Future of Software Delivery (00:50–03:15)
+
+A [calm, cinematic]
+
+“Before we go anywhere, think about what you’re building right now. Not the backlog—the idea behind it. Most products begin as a sentence in someone’s head, not a document.”
+
+“Jurassic Park started the same way. John Hammond didn’t begin with a plan; he began with a vision: a living world where people could walk among dinosaurs.”
+
+C [smile, teasing]
+
+“So basically… every startup pitch ever?”
+
+A
+
+“Exactly. And just like startups: some visions become amazing… and some collapse under their own complexity.”
+
+A — Interaction #1 (fingers 1–5)
+
+“Show fingers 1–5: how much of your delivery success depends on tribal knowledge?
+
+1 = almost none, 5 = heavily.”
+
+Pause, scan the room.
+
+“I’m seeing a lot of 4s and 5s. That’s today’s topic.”
+
+B [sets thesis]
+
+“Our thesis: delivery becomes an ecosystem, and ecosystems fail when complexity outruns coherence.”
+
+Slide 2 — The Problem: Invisible Tax of Scale (03:15–07:00)
+
+A
+
+“Once a vision starts succeeding, something subtle happens. You add one thing… then another… then another… and suddenly you’re operating something far more complex than the original idea.”
+
+B — Interaction #2 (hands + escalation)
+
+“Quick show of hands: who has added a ‘small’ feature that ended up pulling in three or more teams?”
+
+Pause.
+
+“Now keep your hand up if it also required security review, architecture review and a compliance conversation.”
+
+Small laugh.
+
+“Exactly. ‘Small feature’ is a myth at scale.”
+
+A
+
+“That’s the scale tax: delivery technically succeeds, but coordination cost quietly explodes.”
+
+C [skeptic tone]
+
+“And the next tax is context.”
+
+C — Interaction #3 (hands)
+
+“Be honest—who here knows at least one person everyone goes to when something weird breaks?”
+
+Pause.
+
+“Those people are priceless… and they become the bottleneck.”
+
+A
+
+“At that point the best people stop building and start explaining.”
+
+A — Interaction #4 (nod)
+
+“Nod if your best engineers spend more time in meetings now than two years ago.”
+
+Pause.
+
+“That’s the coordination trap.”
+
+B [exec line]
+
+“This isn’t a productivity issue. It’s a structural ceiling of human‑managed complexity.”
+
+Slide 3 — The Gap: Point Solution Failure & War Room (07:00–12:30)
+
+A
+
+“In Jurassic Park there was technology everywhere—sensors, fences, trackers. But the system didn’t understand itself. It could report events… not meaning.”
+
+B [clear, fast]
+
+“Same with us. Our tooling is strong—but it doesn’t close the loop.”
+
+• Jira tracks activity, not intent.
+
+• Git tracks commits, not rationale.
+
+• CI tracks pass/fail, not readiness context.
+
+• Observability tracks incidents, not the decision behind the change.
+
+B — Interaction #5 (fast poll)
+
+“Hands: which gap burns you most—Missing WHY, Missing DECISION, or Missing PROOF?”
+
+Pause.
+
+“I’m seeing a lot of ‘Proof’. That’s where speed becomes safe.”
+
+C [skeptic jab]
+
+“So we’re well‑instrumented and still surprised. Great.”
+
+A
+
+“Exactly—because the system has no memory.”
+
+War Room Scenario (10:45–12:30)
+
+C [Incident Commander tone]
+
+“Let’s simulate a real moment. It’s 11:20 PM, a release is half‑done and something starts failing.”
+
+C — Interaction #6 (audience vote)
+
+“I’m the exec on the bridge. First question I ask is:
+
+• A) ‘Who approved this?’
+
+• B) ‘What’s the blast radius?’
+
+• C) ‘Why are we doing this now?’
+
+Just shout A/B/C.”
+
+Pause; pick the loudest response.
+
+“Right. Now tell me—which tool answers that in 30 seconds? Jira? Git? Monitoring?”
+
+Pause.
+
+“Exactly. None of them—cleanly. That’s why incidents begin by reconstructing history.”
+
+A [land it]
+
+“In Jurassic Park, that’s the moment the fences look fine, but the park still isn’t safe.”
+
+Slide 4 — Strategic Pivot: Shift Left, Connect Everything (12:30–15:00)
+
+B [strong]
+
+“This is the pivot: Shift Left. Connect Everything.
+
+Capture intent early → generate artefacts → maintain connectivity always.”
+
+A — Interaction #7 (self‑check multiple choice)
+
+“Where does intent live in your org today?
+
+• A) A doc
+
+• B) A ticket
+
+• C) A meeting
+
+• D) Someone’s head”
+
+Pause.
+
+“If ‘someone’s head’ is even a meaningful answer—delivery is running on memory, not systems.”
+
+C [exec translation]
+
+“Late clarity is expensive. Late alignment is fragile. Late fixes become inevitable.”
+
+Slide 5 — Definition: What Smart SDLC Is (and isn’t) (15:00–18:00)
+
+A
+
+“What if the system didn’t have to live in someone’s head?”
+
+B [definition, crisp]
+
+“Smart SDLC is a unified intelligence layer for delivery.
+
+It connects the lifecycle end‑to‑end.
+
+It provides role‑aware context.
+
+It moves work forward using evidence, not status narratives.”
+
+C [skeptic challenge]
+
+“Sounds like another layer. Another governance bottleneck. Another dashboard.”
+
+B [reassuring]
+
+“No rip‑and‑replace. It connects existing tools and closes the missing loop.”
+
+C — Interaction #8 (Myth/Reality call‑out)
+
+“I’ll say a statement—you shout MYTH or REALITY:
+
+‘Smart SDLC replaces Jira.’”
+
+Pause. “Myth.”
+
+‘Smart SDLC reduces hero‑dependency.’”
+
+Pause. “Reality.”
+
+A [Nedry beat]
+
+“Every org has a ‘Nedry moment’…”
+
+A — Interaction #9 (vacation question)
+
+“If your key person went on vacation tomorrow… how nervous would you be?”
+
+Pause five seconds for the silence to land.
+
+“That nervousness is a system design smell.”
+
+Slide 6 — The AI Engine: Autonomous Artefact Synthesis (18:00–23:30)
+
+A
+
+“This is where AI comes in—not as a chatbot, but as a model of the delivery ecosystem.”
+
+B [simple + powerful]
+
+“It generates the things teams repeatedly reconstruct:
+
+• Requirements structure from intent
+
+• Architecture artefacts that evolve with the system
+
+• Scaffolding aligned to standards
+
+• Test intent and evidence packs
+
+—all under governance and review.”
+
+C [skeptic, pointed]
+
+“Okay—but what about AI hallucination? AI security? AI ownership? AI audit? This is where initiatives die.”
+
+C — Interaction #10 (one‑word concerns)
+
+“Shout one concern: hallucination, security, audit, ownership, compliance.”
+
+Pause and pick two.
+
+“Great—keep those. We address them on the Risk slide.”
+
+B — Interaction #11 (exec value vote)
+
+“If AI could do one thing tomorrow that saves you the most time, which is it?
+
+• A) Requirements
+
+• B) ADR/architecture
+
+• C) Test plan
+
+• D) Evidence pack
+
+Shout A/B/C/D.”
+
+Pause.
+
+“Perfect—this is why AI here is not ‘chat’. It’s delivery synthesis.”
+
+A [Jurassic Park tie]
+
+“In Jurassic Park terms: instead of saying ‘trust me, the fence is fine,’ the park can show the blueprint, the last change and the tests proving it.”
+
+Slide 7 — The Net Outcome: Delivery Graph (23:30–25:30)
+
+B [clear]
+
+“Net outcome: every piece of work becomes a node in a graph. Nothing is lost. Nothing floats.”
+
+A
+
+“A floating task is a ticket with weak links: unclear intent, missing evidence, unknown blast radius.”
+
+A — Interaction #12 (hands)
+
+“Hands if you’ve seen a ticket close… then reopen… because context was missing.”
+
+Pause.
+
+“Exactly. That’s a floating task.”
+
+C [tech anchor]
+
+“The graph links intent → artefacts → approvals → evidence → runtime signals.”
+
+Slide 8 — How It Works: Continuous Intelligence Loop (25:30–28:15)
+
+B [walk the loop]
+
+“Here’s the continuous intelligence loop:
+
+Capture intent
+
+Synthesize artefacts
+
+Build with intent‑aware context
+
+Verify against intent
+
+Evidence‑based gating
+
+Runtime feedback back into the graph.”
+
+A/C Mini enactment (20 seconds)
+
+A: “We need a change today.”
+
+B: “We can move fast if evidence is ready.”
+
+C: “No proof, no take‑off.”
+
+B — Interaction #13 (either/or)
+
+“Which slows you more today—clarity delays or approval delays?”
+
+Pause.
+
+“Great. This loop attacks both.”
+
+Slide 9 — Value: Product (28:15–30:00)
+
+A [exec]
+
+“Product leaders: what’s the nightmare?”
+
+B
+
+“Surprise dependencies discovered after planning.”
+
+A — Interaction #14 (hands)
+
+“Hands if dependencies usually appear after the plan is ‘final’.”
+
+Pause.
+
+“That’s what the graph removes.”
+
+C [skeptic punch]
+
+“So roadmap stops being a guess. That’s… rare.”
+
+Slide 10 — Value: Delivery Leads (30:00–31:45)
+
+B
+
+“Delivery leads stop chasing narratives; they manage flow using evidence.”
+
+B — Interaction #15 (fingers 1–5)
+
+“Fingers 1–5: how much time is spent on status‑chasing today?”
+
+Pause.
+
+“If it’s 3 or more, you have a scaling problem—not a people problem.”
+
+A [OPTIONAL – 20‑sec neighbour share]
+
+“Turn to the person next to you—20 seconds: what’s your biggest source of surprise today?”
+
+Pause 20 seconds.
+
+“Good—that’s the friction Smart SDLC targets.”
+
+Slide 11 — Value: Architecture (31:45–33:30)
+
+C
+
+“Architecture becomes a living guardrail—drift is detected early.”
+
+C — Interaction #16 (hands)
+
+“Hands if architecture reviews repeat the same questions every time.”
+
+Pause.
+
+“That repetition happens because decisions aren’t preserved as operational truth.”
+
+Slide 12 — Value: Developers (33:30–35:15)
+
+A
+
+“Developers stop waiting for clarity—intent‑aware context shows up where they work.”
+
+A — Interaction #17 (hands)
+
+“Hands if you’ve been blocked due to unclear requirements in the last month.”
+
+Pause.
+
+“Exactly. Smart SDLC converts ambiguity into structured guidance.”
+
+Slide 13 — Value: Reliability & Ops (35:15–37:00)
+
+C
+
+“Ops teams stop reconstructing history during incidents—the graph already knows why changes were made.”
+
+C — Interaction #18 (nod)
+
+“Nod if a root‑cause analysis often starts with: ‘Why was this done?’”
+
+Pause.
+
+“That question should be answerable in seconds, not days.”
+
+Slide 14 — The Blueprint: Technical Architecture (37:00–40:00)
+
+C [trust moment, slower]
+
+“The technical leaders are probably thinking: is this just another dashboard? The answer is no. This is a governed reasoning layer.”
+
+B [plain language]
+
+“Think of it as:
+
+• An Experience Layer and an Intelligence Layer sitting on top of your existing systems.
+
+• A Graph of intent and evidence, plus Eventing to keep it current.
+
+• Integrations into your systems of record so truth stays where it belongs.”
+
+C [governance lock, one‑liners]
+
+“Truth stays in Git and Jira.”
+
+“Reasoning is controlled.”
+
+“Actions are human‑approved.”
+
+C — Interaction #19 (shout vote)
+
+“When leaders hear ‘AI in delivery’, what matters most? Shout security, correctness, or auditability.”
+
+Pause and pick the winner.
+
+“Good—this blueprint is built to satisfy that first.”
+
+Slide 15 — The Roadmap (40:00–41:30)
+
+B
+
+“Roadmap: foundation first, then autonomous intelligence.”
+
+B — Interaction #20 (A/B/C vote)
+
+“If you could only do one thing in 90 days, would you pick:
+
+• A) Delivery graph foundation
+
+• B) Evidence packs
+
+• C) Drift detection
+
+Shout A/B/C.”
+
+Pause.
+
+“Great—that sequencing matches our roadmap.”
+
+Slide 16 — Measurable Impact (41:30–43:00)
+
+A [ROI voice]
+
+“Projected benchmarks at scale:
+
+• 25–35% rework reduction
+
+• 20–30% coordination cost reduction
+
+• 15–25% faster cycle time
+
+• 40–60% faster onboarding”
+
+A — Interaction #21 (choose one)
+
+“Which of these would move your organisation most this year: rework, coordination, cycle time, or onboarding?”
+
+Pause.
+
+“That’s the business case of coherence.”
+
+Slide 17 — Risk Mitigation: What Smart SDLC Is Not (43:00–44:15)
+
+C [answers earlier concerns, fast + sharp]
+
+“Myth: Smart SDLC replaces talent.
+
+Reality: it acts like an exoskeleton for talent—handling memory and synthesis so humans can focus on judgement.
+
+Myth: It’s a governance bottleneck.
+
+Reality: it automates the busywork of documentation and alignment.
+
+Myth: It’s a rigid framework.
+
+Reality: it connects existing tools without displacing them.”
+
+C — Interaction #22 (final Myth/Reality call)
+
+“Shout MYTH or REALITY: ‘This makes delivery safer while going faster.’”
+
+Pause.
+
+“Reality—because speed becomes evidence‑driven.”
+
+Slide 18 — Key Takeaway & Closing (44:15–45:00)
+
+A [slow]
+
+“Jurassic Park didn’t fail because dinosaurs were dangerous.”
+
+B
+
+“It failed because the system forgot what it was building.”
+
+C
+
+“Smart SDLC doesn’t eliminate complexity…”
+
+All (together)
+
+“…it makes sure complexity never outruns coherence.”
+
+A — Final interaction (silence is powerful)
+
+“One closing question: where today does your delivery success still depend on people remembering the right thing at the right time?”
+
+Pause six to eight seconds to let the room think.
+
+“Thank you. We’ll take questions.”
