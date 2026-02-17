@@ -1,0 +1,11 @@
+1. Semantic Router & Context Window
+Instead of just "Input," we analyze the intent.
+The system dynamically assembles context from the Graph (Code + JIRA + Docs) before the LLM is even invoked.
+2. Multi-Agent Orchestration (The "Brain")
+Planner Agent: Breaks complex queries into sub-tasks (e.g., "Check architecture guidelines" + "Generate boilerplate").
+Execution Agent: Calls specific Foundation Models via Bedrock.
+Critic Agent: validaties the output against known constraints (Hallucination check).
+3. Enterprise Guardrails (The "Lock")
+Pre-Guard: PII redaction and permission enforcement.
+Post-Guard: Syntax validation and "Human-in-the-Loop" approval gates for high-impact commits.
+Feedback Loop: Accepted actions are fed back into Vector Memory to improve future reasoning.
