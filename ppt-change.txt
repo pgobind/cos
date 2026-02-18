@@ -1,0 +1,215 @@
+# Smart SDLC Presentation — PPT Change Guide
+## Slide-by-Slide Recommendations (Based on 43-Page PDF Review + v3 Script)
+
+---
+
+## STRUCTURAL CHANGES (Must-Do Before Anything Else)
+
+### Change 1: Merge Original Slides 5 + 6 → One Slide
+**Current state:** Two separate slides: "Part One: The Scale Reality" (Slide 5) and a title card "The Scale Reality" (Slide 6)
+**Problem:** Two one-sentence title cards back-to-back = dead air on stage. The speaker has nothing to say on one of them.
+**Action:** Merge into a single transition slide. Keep the "Part One: The Scale Reality" text and the dinosaur visual from whichever slide has the stronger image. One clean transition, 3 seconds, move on.
+
+### Change 2: Remove Old Slide 20 (Already Done in Script)
+**Current state:** The script already notes "Remove Slide 20: Raptor escaping." Confirm this slide is physically removed from the deck.
+
+### Change 3: Add New "Watch It Work" Slide (New Slide 24)
+**Where:** Between current "It's the connective tissue" slide and the "Autonomous Artefact Synthesis" slide.
+**Why:** This is the centrepiece demo moment. Sambit narrates a 2-minute scenario where Smart SDLC processes a real request. It NEEDS a visual.
+
+**Suggested visual layout:**
+```
+┌─────────────────────────────────────────────────┐
+│                                                 │
+│  LEFT THIRD        CENTER           RIGHT THIRD │
+│                                                 │
+│  ┌───────────┐   ┌──────────┐   ┌───────────┐  │
+│  │ Chat      │   │ Delivery │   │ Outputs   │  │
+│  │ Interface │──▶│ Graph    │──▶│ Generated │  │
+│  │           │   │ Lighting │   │           │  │
+│  │ PM types: │   │ Up       │   │ ✓ Reqs    │  │
+│  │ "Add      │   │          │   │ ✓ ADR     │  │
+│  │ multi-    │   │ [nodes   │   │ ✓ Tests   │  │
+│  │ currency" │   │  glowing]│   │ ✓ Code    │  │
+│  └───────────┘   └──────────┘   └───────────┘  │
+│                                                 │
+│    "Watch Smart SDLC Think"                     │
+│     Two weeks of alignment → Under a minute     │
+│                                                 │
+└─────────────────────────────────────────────────┘
+```
+
+**Design direction:** Use the anime art style. The center graph visual could be inspired by the Jurassic Park control room powering on — screens activating, nodes connecting. The left could show a simple chat input. The right shows the output artefacts materializing.
+
+**Tagline on slide:** "Two weeks of alignment → Under a minute"
+
+### Change 4: Re-number All Slides
+After the merge and addition, walk through the entire deck and ensure every slide matches the v3 script numbering (1–43).
+
+---
+
+## SLIDE-BY-SLIDE VISUAL RECOMMENDATIONS
+
+### Slide 1 (Opening — "Imagine")
+**Current:** Strong dark visual.
+**Keep as-is.** The visual should be atmospheric, not informational. The words are everything here.
+
+### Slide 2 (Skills Combination)
+**Current:** Shows quadrant diagram (Intent Modelling, RAG, Governance, Synthesis).
+**Recommendation:** The quadrant labels can stay — BUT the script no longer says "Retrieval-Augmented Reasoning" or "Artifact Synthesis." Consider softening the on-slide text to match: "AI that reasons over internal documents" instead of "Retrieval-Augmented Reasoning." The slide should set tone, not teach jargon in minute 2.
+
+### Slide 3 (Speaker Intros)
+**Keep as-is.** The three-panel character introduction works well with the JP art style.
+
+### Slide 5 (now merged — "Scale Reality")
+**New:** Single transition slide. Large text: "THE SCALE REALITY" with a JP visual of the park at scale — many enclosures, many control rooms. Convey vastness.
+
+### Slide 6 (now the Hammond "Spared No Expense" slide)
+**Current:** Strong visual.
+**Add:** Consider overlaying the text "Smart SDLC Removes the Scale Tax" as a callout or banner — this is the thesis statement and should be visually anchored.
+
+### Slide 12 (JP Comic Panels — Dinosaur Misinterpretation)
+**Current:** Brilliant comic panel layout showing different interpretations.
+**Recommendation:** This is one of the best slides in the deck. **LINGER HERE.** Suggest adding a subtle animation: Left panel (intent) appears first → Right panels (misinterpretations) appear on click. This gives Narayanan time to set up the contrast.
+
+### Slide 13 (Crisis Summary)
+**Current:** Shows all three problems at once.
+**Recommendation:** Add click-to-reveal animation so each problem (Paradox → Context Gap → Coordination Trap) appears one at a time. This creates rhythm and prevents the audience from reading ahead while Narayanan is still on the first point.
+
+### Slide 16 (Jira/Git/CI-CD Gap)
+**Current:** Shows contrasts (Activity vs Intent, Code vs Rationale, etc.)
+**Recommendation:** This is a killer slide. The contrast pairs are memorable. Ensure the "NOT" side is visually distinct (perhaps muted/grayed) while the missing "MEANING" side pops in a highlight color. The takeaway line "These tools track events. They do not track meaning" should appear as a callout.
+
+### Slide 18 (Nedry Story — "Two-line change, two-week alignment")
+**Current:** Narrative slide.
+**Recommendation:** This is the most emotionally resonant moment of Act 1. Consider: the word "Silence." in the script should correspond to a visual beat on the slide — either a blank/dark moment or a single word on screen. The visual should NOT be busy when the speaker says "Silence."
+
+### Slide 19 (The Pivot — "We have a memory problem")
+**Current:** Transition slide.
+**Recommendation:** This is the narrative turn of the entire presentation. Consider a visual shift — slightly different colour temperature (warmer, lighter) signaling "the answer is coming." The phrase "Shift Memory Left" could appear as the central visual element. This is the moment the audience leans forward.
+
+### Slide 21 (Smart SDLC Reveal)
+**Current:** Shows the coherence engine definition.
+**Recommendation:** The three capabilities (Captures Intent Early, Generates Artefacts Autonomously, Maintains Connectivity Always) should be the most prominent visual elements. Consider having them appear sequentially with the Jurassic Park "power coming back on" visual metaphor.
+
+### Slide 22 (What Smart SDLC Is / Is NOT)
+**Current:** Lists positives and negatives.
+**Recommendation:** Ensure the "NOT" items are visually struck through or muted — not given equal visual weight. The eye should go to the positive framing first. The tagline "A system that remembers… so your people don't have to" should be the largest text on the slide.
+
+### ⭐ Slide 24 (NEW — "Watch It Work")
+**See structural change #3 above for layout.**
+**This is the most important new visual in the deck.** It should feel like a system demo, not a diagram. Think: cinematic, dynamic, the graph activating.
+
+### Slide 25 (Four Capabilities)
+**Current:** Shows Requirements Synthesis, Dynamic Architecture, Scaffolding, Validation.
+**Recommendation:** Since the script now frames these as "What you just saw is possible because of four capabilities," the visual should feel like an EXPLANATION of the demo, not a separate feature list. Consider numbering them 1-4 and connecting each back to a moment in the demo scenario. E.g., "1. Requirements Synthesis → The compliance rules it retrieved" "2. Dynamic Architecture → The ADR it generated"
+
+### Slide 27 (Linkage / Delivery Graph)
+**Current:** Shows the semantic graph visualization.
+**Recommendation:** The script now includes a raptor metaphor: "when a fence goes down, the impact cascades." Consider a subtle overlay or callout: "The system that sees the cascade before it happens." This reinforces the JP thread visually.
+
+### Slide 31 (Product Ownership)
+**Current:** Shows Intent Graph concept.
+**Recommendation:** The phrase "You don't manage work. You manage uncertainty" is powerful. Consider making it a visual pull-quote at the top before showing the graph. The contrast "What's the status?" → "What is the optimal sequence?" should be visually represented as a before/after.
+
+### Slide 33 (Leadership / Governance)
+**Recommendation:** Add the phrase "Governance by architecture, not by committee" as a large callout or banner on this slide. This is the most quotable line for executive audiences and will be photographed/tweeted. Make it visually prominent.
+
+### Slide 34 (Predictive Alerts)
+**Recommendation:** Add "— not someone's opinion in a status meeting" as a subtitle. The contrast between graph-based prediction and opinion-based status is the insight. Make it visible.
+
+### Slide 35 (Architecture as Living System)
+**Recommendation:** The script now ends with "the fences don't just hold. They report. They adapt. And they never forget which dinosaur they were built to contain." Consider a JP visual of electrified, intelligent fences — glowing, adaptive. This is a beautiful metaphor and deserves visual support.
+
+### Slide 40 (Technical Architecture — 5 Layers)
+**Current:** Detailed architecture diagram with layers.
+**Recommendation:** The diagram is already strong. The key change: ensure the "Governance Lock" section is visually the MOST prominent element — larger, bolder, perhaps in a different color. The script builds to it as the climax of this slide. Also consider adding a simple callout: "Intelligence = AI. Authority = Human."
+
+### Slide 41 (Roadmap — Phase 1 → Phase 2)
+**Recommendation:** The script now opens with "This is not a concept. This is running today." Consider adding a "LIVE" badge or indicator next to Phase 1 — a small visual cue that says "this is real, now." Phase 2 should feel aspirational but grounded.
+
+### ⭐ Slide 42 (ROI — The Payoff)
+**Current:** Dense layout with 6 metrics + qualitative section.
+**Problem:** Too much visual information. The speaker delivers 4 numbers + 3 shifts. The slide shows 6 numbers + 4 shifts. The audience reads ahead and checks out.
+
+**Recommended redesign:**
+```
+┌─────────────────────────────────────────────────┐
+│                                                 │
+│  ┌──────────┐  ┌──────────┐                     │
+│  │  25-35%  │  │  40-70%  │                     │
+│  │ Rework ↓ │  │ Onboard↑ │                     │
+│  └──────────┘  └──────────┘                     │
+│  ┌──────────┐  ┌──────────┐                     │
+│  │  20-30%  │  │  15-25%  │                     │
+│  │ Coord ↓  │  │ Predict↑ │                     │
+│  └──────────┘  └──────────┘                     │
+│                                                 │
+│  ─────────────────────────────────────          │
+│  "But the bigger ROI is structural"             │
+│                                                 │
+│  Leadership:  Status → Transparency             │
+│  Engineering: Archaeology → Architecture        │
+│  Organization: Hero Culture → Institutional     │
+│                                  Memory         │
+│                                                 │
+│  "Coherence makes complexity compound           │
+│   in your favour."                              │
+│                                                 │
+└─────────────────────────────────────────────────┘
+```
+
+**4 large number cards** (2×2 grid) — each number should be 48-60pt bold. Metric name below in 14pt.
+**3 shift statements** below the line — clean, uncluttered, with arrow indicators.
+**Closing line** at the bottom as a callout.
+
+### Slide 43 (Call to Action)
+**Recommendation:** Show all three speaker photos (reuse from Slide 3). Three people, one ask. The text should be minimal: "Validate." and "Bring us one use case." Consider adding a QR code to a contact/signup page if available.
+
+---
+
+## GENERAL DESIGN RECOMMENDATIONS
+
+### 1. Slide Numbers
+Add subtle slide numbers (bottom-right, small, muted color). Helps during rehearsal and Q&A ("as we showed on Slide 18...").
+
+### 2. Transition Signals
+Consider a subtle visual marker on slides where the speaker changes — perhaps a small speaker icon or color-coded dot in the corner. This helps the speakers track handoffs during rehearsal.
+
+### 3. Animation Philosophy
+The deck should use MINIMAL animation — but strategic animation at 3 key moments:
+- **Slide 12** (JP comic panels): Intent appears first → Misinterpretations appear on click
+- **Slide 13** (Crisis summary): Three problems appear one at a time
+- **Slide 42** (ROI): 4 numbers appear sequentially → Qualitative shifts appear after "But what matters more"
+
+Everything else: no animation. Clean transitions. The speakers' voices carry the pacing.
+
+### 4. Font Sizing for Conference Projection
+At a conference venue, the back row is 50+ feet from the screen. Ensure:
+- Titles: 36pt minimum
+- Body text: 20pt minimum (anything smaller won't be readable)
+- Key callout phrases: 28-32pt
+- The ROI numbers: 48pt+
+
+### 5. The Dark Navy + Orange Palette
+The existing dark navy (#1B1F3B) + orange accent palette is strong and professional. Keep it. The anime/manga Jurassic Park art style is distinctive and memorable — it's a differentiator. Don't tone it down.
+
+---
+
+## PRIORITY ORDER
+
+| Priority | Change | Effort |
+|----------|--------|--------|
+| 1 | Merge Slides 5+6 | 5 min |
+| 2 | Add "Watch It Work" slide (new 24) | 30 min design |
+| 3 | Redesign ROI slide (42) to 4 numbers + 3 shifts | 20 min |
+| 4 | Add "Governance by architecture" callout to Slide 33 | 5 min |
+| 5 | Add animation build to Slide 13 (Crisis Summary) | 5 min |
+| 6 | Add animation build to Slide 12 (JP comic) | 5 min |
+| 7 | Soften jargon on Slide 2 labels | 5 min |
+| 8 | Add speaker photos to Slide 43 (CTA) | 10 min |
+| 9 | Add slide numbers throughout | 10 min |
+| 10 | Adjust Slide 35 with fence metaphor visual | 15 min |
+
+**Total estimated effort: ~2 hours of design work.**
+Items 1-6 are the highest impact and take under 1 hour combined.

@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart SDLC — Speaker Cue Cards</title>
+<style>
+  @media print {
+    .page-break { page-break-before: always; }
+    body { margin: 0; }
+    .no-print { display: none; }
+  }
+  
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f0f0f0;
+    color: #1a1a1a;
+    padding: 20px;
+  }
+  
+  .header {
+    text-align: center;
+    padding: 30px 20px;
+    margin-bottom: 30px;
+    background: #1B1F3B;
+    color: white;
+    border-radius: 12px;
+  }
+  .header h1 { font-size: 28px; margin-bottom: 6px; letter-spacing: 1px; }
+  .header p { font-size: 14px; opacity: 0.7; }
+  
+  .speaker-section {
+    margin-bottom: 40px;
+  }
+  
+  .speaker-title {
+    font-size: 22px;
+    font-weight: 700;
+    padding: 14px 24px;
+    border-radius: 10px 10px 0 0;
+    color: white;
+    letter-spacing: 0.5px;
+  }
+  .speaker-title.narayanan { background: #2C5F8A; }
+  .speaker-title.sambit { background: #7B4B94; }
+  .speaker-title.gobind { background: #2E7D5B; }
+  
+  .speaker-subtitle {
+    font-size: 13px;
+    padding: 8px 24px;
+    color: #555;
+    background: #e8e8e8;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .card {
+    background: white;
+    border-left: 5px solid #ccc;
+    padding: 16px 20px;
+    margin: 0;
+    border-bottom: 1px solid #eee;
+    position: relative;
+  }
+  .card:last-child { border-radius: 0 0 10px 10px; }
+  
+  .card.narayanan { border-left-color: #2C5F8A; }
+  .card.sambit { border-left-color: #7B4B94; }
+  .card.gobind { border-left-color: #2E7D5B; }
+  .card.joint { border-left-color: #D4A843; background: #FFFDF5; }
+  .card.interaction { border-left-color: #E8652A; background: #FFF8F5; }
+  
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  
+  .slide-num {
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+    background: #555;
+    padding: 2px 10px;
+    border-radius: 12px;
+    min-width: 64px;
+    text-align: center;
+  }
+  .slide-num.narayanan { background: #2C5F8A; }
+  .slide-num.sambit { background: #7B4B94; }
+  .slide-num.gobind { background: #2E7D5B; }
+  .slide-num.interaction { background: #E8652A; }
+  .slide-num.joint { background: #D4A843; }
+  
+  .timing {
+    font-size: 12px;
+    color: #888;
+    font-style: italic;
+  }
+  
+  .opener {
+    font-size: 15px;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+  
+  .key-line {
+    font-size: 14px;
+    color: #444;
+    margin-bottom: 6px;
+    padding-left: 12px;
+    border-left: 2px solid #ddd;
+    line-height: 1.5;
+  }
+  .key-line strong { color: #1a1a1a; }
+  
+  .stage-note {
+    font-size: 12px;
+    color: #E8652A;
+    font-weight: 600;
+    margin-top: 6px;
+  }
+  
+  .handoff {
+    font-size: 12px;
+    color: #2C5F8A;
+    font-weight: 600;
+    margin-top: 4px;
+  }
+  
+  .section-marker {
+    background: #1B1F3B;
+    color: white;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  
+  .legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 16px 24px;
+    background: white;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    font-size: 13px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>SMART SDLC — CUE CARDS</h1>
+  <p>DevUp Conference — March 2026 | 38 Minutes | 43 Slides</p>
+</div>
+
+<div class="legend no-print">
+  <div class="legend-item"><div class="legend-dot" style="background:#2C5F8A"></div> Narayanan (Strategy)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#7B4B94"></div> Sambit (Builder)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#2E7D5B"></div> Gobind (System)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#E8652A"></div> Audience Interaction</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#D4A843"></div> Joint Moment</div>
+</div>
+
+<!-- ============================================== -->
+<!-- NARAYANAN'S CARDS -->
+<!-- ============================================== -->
+<div class="speaker-section">
+  <div class="speaker-title narayanan">NARAYANAN — Strategy & Business Value</div>
+  <div class="speaker-subtitle">You speak on ~18 slides. You open, frame the problem, deliver ROI, and close. You are the narrative voice.</div>
+  
+  <div class="section-marker">ACT 1 — THE REALITY (0:00 – 14:00)</div>
+  
+  <div class="card narayanan">
+    <div class="card-header">
+      <span class="slide-num narayanan">Slide 1</span>
+      <span class="timing">0:00 — OPEN STRONG</span>
+    </div>
+    <div class="opener">"Imagine for a moment..."</div>
+    <div class="key-line">Build slowly. 3x "Imagine." Land the regulator scenario. Then: <strong>"That is not fiction. That is Coherence."</strong></div>
+    <div class="handoff">→ Hand to GOBIND (Slide 2)</div>
+  </div>
+  
+  <div class="card narayanan">
+    <div class="card-header">
+      <span class="slide-num narayanan">Slides 3–4</span>
+      <span class="timing">~2:30</span>
+    </div>
+    <div class="opener">"My name is Narayanan. I represent Strategy."</div>
+    <div class="key-line">After all 3 intros + Sambit's JP joke, you set the roadmap: <strong>"Reality → Failure Modes → Missing Layer → Hard Outcomes"</strong></div>
+  </div>
+  
+  <div class="card narayanan">
+    <div class="card-header">
+      <span class="slide-num narayanan">Slides 5–6</span>
+      <span class="timing">~3:30</span>
+    </div>
+    <div class="opener">"In Jurassic Park, Hammond said he 'spared no expense.'"</div>
+    <div class="key-line">The setup: We do everything right... <strong>"Until it doesn't."</strong> Introduce Scale Tax: <strong>"Friction when complexity outpaces human coordination."</strong></div>
+  </div>
+  
+  <div class="card interaction">
+    <div class="card-header">
+      <span class="slide-num interaction">INTERACTION 1</span>
+      <span class="timing">~5:00</span>
+    </div>
+    <div class="opener">"Quick show of hands..."</div>
+    <div class="key-line">Execution = 2 days, alignment = 2 weeks. <strong>WAIT for hands. Count to 3.</strong> Then: <strong>"The tax of coordination is now higher than the cost of the code."</strong></div>
+    <div class="stage-note">⚡ Don't rush this. Let the room feel seen.</div>
+    <div class="handoff">→ Hand to SAMBIT (Slide 7)</div>
+  </div>
+  
+  <div class="card narayanan">
+    <div class="card-header">
+      <span class="slide-num narayanan">Slides 11–12</span>
+      <span class="timing">~8:00</span>
+    </div>
+    <div class="opener">"This leads to the Coordination Trap."</div>
+    <div class="key-line">Name Gobind directly: "We turn architects like Gobind into Human Routers." Land: <strong>"They are routing memory. That is a tragic misallocation of talent."</strong> Then: <strong>"When that person leaves, the architecture leaves with them."</strong></div>
+  </div>
+  
+  <div class="card narayanan">
+    <div class="card-header">
+      <span class="slide-num narayanan">Slide 12</span>
+      <span class="timing">~9:30</span>
+    </div>
+    <div class="opener">"Consider Jurassic Park. Look at the Left Side."</div>
+    <div class="key-line">Hammond's intent vs. 5 interpretations. <strong>"The failure didn't happen in execution. It happened in translation."</strong></div>
+  </div>
+  
+  <div class="card narayanan">
+    <div class="card-header">
+      <span class="slide-num narayanan">Slide 13</span>
+      <span class="timing">~10:30</span>
+    </div>
+    <div class="opener">"This slide summarizes the crisis."</div>
+    <div class="key-line">Three beats: Paradox → Context Gap → Coordination Trap. <strong>Deliver each one, then pause.</strong> Close: "We are moving information, instead of compounding intelligence."</div>
+    <div class="handoff">→ Hand to SAMBIT (Slide 14)</div>
+  </div>
+  
+  <div class="section-marker">ACT 2 — THE PIVOT (14:00 – 17:00)</div>
+  
+  <div class="card narayanan">
+    <div class="card-header">
+      <span class="slide-num narayanan">Slide 19</span>
+      <span class="timing">~14:00 — THE TURN</span>
+    </div>
+    <div class="opener">"So if the problem is not talent… not effort… not tooling…"</div>
+    <div class="key-line">This is the pivot of the entire talk. Slow down. <strong>"We have a memory problem."</strong> Build to: <strong>"The real thing we need to shift left… is intent."</strong></div>
+  </div>
+  
+  <div class="card narayanan">
+    <div class="card-header">
+      <span class="slide-num narayanan">Slides 20–21</span>
+      <span class="timing">~16:00 — THE REVEAL</span>
+    </div>
+    <div class="opener">"What if the SDLC itself becomes aware of intent?"</div>
+    <div class="key-line">Pause before the reveal. <strong>"Well — That is — Smart SDLC."</strong> Then define it: "Captures intent early. Generates artefacts autonomously. Maintains connectivity always."</div>
+    <div class="handoff">→ Hand to GOBIND (Slide 22)</div>
+  </div>
+  
+  <div class="section-marker">ACT 3 — PERSONA VALUE (23:00 – 28:00)</div>
+  
+  <div class="card narayanan">
+    <div class="card-header">
+      <span class="slide-num narayanan">Slide 28</span>
+      <span class="timing">~22:00</span>
+    </div>
+    <div class="opener">"If the initiative is a T-Rex, and the habitat is low-voltage fencing..."</div>
+    <div class="key-line">Quick JP callback. <strong>"Intent-aware impact analysis. Before execution."</strong> One breath, move on.</div>
+  </div>
+  
+  <div class="card narayanan">
+    <div class="card-header">
+      <span class="slide-num narayanan">Slide 30</span>
+      <span class="timing">~24:00</span>
+    </div>
+    <div class="opener">"The predators multiply."</div>
+    <div class="key-line">Transition line. Frame what's coming: <strong>"Coherence is not abstract. It reshapes how every person in your organisation experiences delivery."</strong></div>
+  </div>
+  
+  <div class="card narayanan">
+    <div class="card-header">
+      <span class="slide-num narayanan">Slides 31–34</span>
+      <span class="timing">~25:00</span>
+    </div>
+    <div class="opener">"Product today is forced into orchestration through spreadsheets."</div>
+    <div class="key-line">Product → Leadership → Alerts. Key lines: <strong>"You manage uncertainty"</strong> → <strong>"Leadership needs signal, not dashboards"</strong> → <strong>"Governance by architecture, not by committee."</strong></div>
+    <div class="handoff">→ Hand to GOBIND (Slide 35)</div>
+  </div>
+  
+  <div class="section-marker">ACT 4 — ROI & CLOSE (31:00 – 38:00)</div>
+  
+  <div class="card narayanan">
+    <div class="card-header">
+      <span class="slide-num narayanan">Slide 42</span>
+      <span class="timing">~33:00 — THE PAYOFF</span>
+    </div>
+    <div class="opener">"Does this pay off? Let me give you four numbers."</div>
+    <div class="key-line">Deliver each metric with its "because": <strong>25-35% rework → 40-70% onboarding → 20-30% coordination → 15-25% predictability.</strong> Then pivot: <strong>"But here is what matters more than the numbers."</strong> Three shifts: Leadership → Engineering → Organization. Close: <strong>"Coherence makes complexity compound in your favour."</strong></div>
+    <div class="stage-note">⚡ This is the money slide. Don't rush the "because" after each number — that's what makes them credible.</div>
+  </div>
+  
+  <div class="card interaction">
+    <div class="card-header">
+      <span class="slide-num interaction">FINAL INTERACTION</span>
+      <span class="timing">~36:00</span>
+    </div>
+    <div class="opener">"If you could pick one lever this year..."</div>
+    <div class="key-line">Reducing Rework or Moving Faster? <strong>Pause. Let them think. Then: "Actually — do not answer. Because Coherence gives you both."</strong></div>
+    <div class="stage-note">⚡ The pause before "do not answer" is everything. 2 full seconds.</div>
+  </div>
+  
+  <div class="card joint">
+    <div class="card-header">
+      <span class="slide-num joint">Slide 43 — CLOSE</span>
+      <span class="timing">~37:00</span>
+    </div>
+    <div class="opener">"The park is open."</div>
+    <div class="key-line"><strong>"We are asking you to do one thing: Validate."</strong> → Gobind delivers next line → Sambit closes → All: "Thank you."</div>
+    <div class="stage-note">⚡ All three stand together. Make eye contact with the room.</div>
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- SAMBIT'S CARDS -->
+<!-- ============================================== -->
+<div class="speaker-section page-break">
+  <div class="speaker-title sambit">SAMBIT — The Builder's Perspective</div>
+  <div class="speaker-subtitle">You speak on ~14 slides. You own the "Watch It Work" moment, the engine detail, and the developer experience. You are the product voice.</div>
+  
+  <div class="section-marker">ACT 1 — THE REALITY (5:00 – 14:00)</div>
+  
+  <div class="card sambit">
+    <div class="card-header">
+      <span class="slide-num sambit">Slide 3</span>
+      <span class="timing">~2:00</span>
+    </div>
+    <div class="opener">"And I'm Sambit. I represent the Builders."</div>
+    <div class="key-line">Then the JP reveal: <strong>"No movie illustrates the failure modes of large enterprise systems better."</strong> Smile when you say it.</div>
+  </div>
+  
+  <div class="card sambit">
+    <div class="card-header">
+      <span class="slide-num sambit">Slide 7</span>
+      <span class="timing">~5:30</span>
+    </div>
+    <div class="opener">"This is the paradox of modern delivery."</div>
+    <div class="key-line">"We are scaling talent… but we are also scaling drag." Close: <strong>"It is about reducing the cost of coordination."</strong></div>
+    <div class="handoff">→ Hand to GOBIND (Slide 8)</div>
+  </div>
+  
+  <div class="card sambit">
+    <div class="card-header">
+      <span class="slide-num sambit">Slide 10</span>
+      <span class="timing">~7:00</span>
+    </div>
+    <div class="opener">"A developer implements exactly what the ticket says..."</div>
+    <div class="key-line">Build the triplet: developer, QA, Risk — each does their job. <strong>"And yet — production behaves in a way no one expected."</strong></div>
+  </div>
+  
+  <div class="card interaction">
+    <div class="card-header">
+      <span class="slide-num interaction">INTERACTION 2</span>
+      <span class="timing">~7:30</span>
+    </div>
+    <div class="opener">"Raise your hand if you've ever seen..."</div>
+    <div class="key-line">Three scenarios, flowing sentence. <strong>WAIT for hands.</strong> Then: <strong>"That's not execution failure. That's context drift."</strong></div>
+    <div class="stage-note">⚡ Let Gobind jump in with "misalignment compounds" — don't step on his line.</div>
+    <div class="handoff">→ Gobind adds the "Context Gap" tag, then → NARAYANAN (Slide 11)</div>
+  </div>
+  
+  <div class="card sambit">
+    <div class="card-header">
+      <span class="slide-num sambit">Slides 14–16</span>
+      <span class="timing">~11:00</span>
+    </div>
+    <div class="opener">"A fair question. Don't we already have tools?"</div>
+    <div class="key-line">The killer contrast: <strong>"Jira tracks activity — not intent. Git tracks code — not rationale."</strong> Build all four. Land: <strong>"These tools track events. They do not track meaning."</strong></div>
+    <div class="handoff">→ Hand to GOBIND (Slide 17 — Nedry)</div>
+  </div>
+  
+  <div class="section-marker">ACT 2 — THE PRODUCT (17:00 – 24:00)</div>
+  
+  <div class="card sambit">
+    <div class="card-header">
+      <span class="slide-num sambit">Slide 23</span>
+      <span class="timing">~17:00</span>
+    </div>
+    <div class="opener">"It sits above your tools, connecting them."</div>
+    <div class="key-line">Quick line. <strong>"The connective tissue between Jira, Git, and the Cloud."</strong></div>
+  </div>
+  
+  <div class="card sambit">
+    <div class="card-header">
+      <span class="slide-num sambit">Slide 24</span>
+      <span class="timing">~17:30 — ⭐ YOUR CENTREPIECE</span>
+    </div>
+    <div class="opener">"Let me make this real."</div>
+    <div class="key-line"><strong>CALLBACK:</strong> "Remember that two-line change that became a two-week alignment exercise? The one where Nedry built it and left in 2022?" Replay it — 8 seconds with Smart SDLC. Then escalate to the PM multi-currency scenario. Build from chaos → clarity. Close: <strong>"That is not a chatbot. That is an AI system that understands your organisation."</strong></div>
+    <div class="stage-note">⚡ REHEARSE THIS UNTIL IT FLOWS LIKE A SHORT FILM. This is the moment people remember. Build tension in the "old world" — then release it with "Now watch."</div>
+  </div>
+  
+  <div class="card sambit">
+    <div class="card-header">
+      <span class="slide-num sambit">Slides 25–26</span>
+      <span class="timing">~20:00</span>
+    </div>
+    <div class="opener">"What you just saw is possible because of four capabilities."</div>
+    <div class="key-line">Requirements Synthesis → Dynamic Architecture → Scaffolding → Autonomous Validation. Then: "Translation tax" — <strong>"AI handles structural synthesis. Humans focus on judgment."</strong></div>
+    <div class="handoff">→ Hand to GOBIND (Slide 27)</div>
+  </div>
+  
+  <div class="card sambit">
+    <div class="card-header">
+      <span class="slide-num sambit">Slide 29</span>
+      <span class="timing">~22:30</span>
+    </div>
+    <div class="opener">"This creates a closed-loop delivery system."</div>
+    <div class="key-line">6 steps. Key insight: <strong>"Verification is not against the code. It is against the original intent."</strong> Close: "Smart SDLC is a self-correcting system."</div>
+    <div class="handoff">→ Hand to NARAYANAN (Slide 30)</div>
+  </div>
+  
+  <div class="section-marker">ACT 3 — DEVELOPER EXPERIENCE (26:00 – 28:00)</div>
+  
+  <div class="card sambit">
+    <div class="card-header">
+      <span class="slide-num sambit">Slides 36–38</span>
+      <span class="timing">~26:00</span>
+    </div>
+    <div class="opener">"Developers. Look at the tooltip on the screen."</div>
+    <div class="key-line">move_herbivores() tooltip demo. <strong>"The context finds me."</strong> Then: "Smart SDLC eliminates archaeology." Close: <strong>"Developers move with clarity."</strong></div>
+    <div class="handoff">→ Hand to GOBIND (Slide 39)</div>
+  </div>
+  
+  <div class="section-marker">ACT 4 — ROADMAP & CLOSE (31:00 – 38:00)</div>
+  
+  <div class="card sambit">
+    <div class="card-header">
+      <span class="slide-num sambit">Slide 41</span>
+      <span class="timing">~32:00</span>
+    </div>
+    <div class="opener">"Phase 1: Foundation. The graph is live. This is running today."</div>
+    <div class="key-line">Phase 1 = Connected Intelligence (today). Phase 2 = Autonomous Engineering. The vision: <strong>"A background agent detects, generates, validates, and asks: 'Approve.'"</strong> Close: <strong>"Phase 2 isn't about finding information; it's about delegating work."</strong></div>
+    <div class="handoff">→ Hand to NARAYANAN (Slide 42 — ROI)</div>
+  </div>
+  
+  <div class="card joint">
+    <div class="card-header">
+      <span class="slide-num joint">Slide 43 — CLOSE</span>
+      <span class="timing">~37:30</span>
+    </div>
+    <div class="opener">After Gobind: your line.</div>
+    <div class="key-line"><strong>"Let's stop paying the Scale Tax. Let's start architecting coherence."</strong></div>
+    <div class="stage-note">⚡ Final word before "Thank you." Make it land.</div>
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- GOBIND'S CARDS -->
+<!-- ============================================== -->
+<div class="speaker-section page-break">
+  <div class="speaker-title gobind">GOBIND — System & Architecture</div>
+  <div class="speaker-subtitle">You speak on ~14 slides. You own the Nedry story, the graph/linkage breakthrough, and the architecture deep-dive. You are the trust voice.</div>
+  
+  <div class="section-marker">ACT 1 — THE REALITY (2:00 – 14:00)</div>
+  
+  <div class="card gobind">
+    <div class="card-header">
+      <span class="slide-num gobind">Slide 2</span>
+      <span class="timing">~1:00</span>
+    </div>
+    <div class="opener">"To build that world, we had to combine skills that usually don't sit in the same room."</div>
+    <div class="key-line">Point at the slide. <strong>"We didn't just build a tool; we built a discipline."</strong></div>
+    <div class="handoff">→ All three do intros (Slide 3)</div>
+  </div>
+  
+  <div class="card gobind">
+    <div class="card-header">
+      <span class="slide-num gobind">Slides 8–9</span>
+      <span class="timing">~6:00</span>
+    </div>
+    <div class="opener">"As teams grow, interactions grow exponentially."</div>
+    <div class="key-line"><strong>"This isn't incompetence. It's entropy."</strong> Then: "The control room didn't see what the field saw." Name it: <strong>"The Context Gap."</strong></div>
+  </div>
+  
+  <div class="card gobind">
+    <div class="card-header">
+      <span class="slide-num gobind">Slide 10</span>
+      <span class="timing">~7:30</span>
+    </div>
+    <div class="opener">After Sambit's Interaction 2, you tag in:</div>
+    <div class="key-line"><strong>"We misalign quietly. And misalignment compounds."</strong> This is your signature delivery — calm, structural, certain.</div>
+  </div>
+  
+  <div class="card gobind">
+    <div class="card-header">
+      <span class="slide-num gobind">Slides 17–18</span>
+      <span class="timing">~12:00 — ⭐ THE NEDRY STORY</span>
+    </div>
+    <div class="opener">"Dennis Nedry wasn't the villain. He was the single point of context."</div>
+    <div class="key-line">Slide 17: The JP metaphor — quick. Slide 18: YOUR story. Build slowly: engineer, architect, VP — all gone. <strong>"Silence."</strong> (actual pause). "Two-line change → two-week alignment." Land: <strong>"Context lives in people, not in the institution."</strong></div>
+    <div class="stage-note">⚡ The word "Silence" is literal. Say it, then be silent for 2 seconds. The room will feel it.</div>
+  </div>
+  
+  <div class="card interaction">
+    <div class="card-header">
+      <span class="slide-num interaction">INTERACTION 3</span>
+      <span class="timing">~13:30</span>
+    </div>
+    <div class="opener">"Raise your hand if you've ever looked at code and said: 'Let's not go there.'"</div>
+    <div class="key-line"><strong>WAIT. Then quietly:</strong> "That invisible caution? That's context debt accumulating interest."</div>
+    <div class="stage-note">⚡ Lower your voice here. Contrast with the energy of the story. Let the insight land softly.</div>
+    <div class="handoff">→ Hand to NARAYANAN (Slide 19 — The Pivot)</div>
+  </div>
+  
+  <div class="section-marker">ACT 2 — SOLUTION FRAMING (17:00 – 24:00)</div>
+  
+  <div class="card gobind">
+    <div class="card-header">
+      <span class="slide-num gobind">Slide 22</span>
+      <span class="timing">~17:00</span>
+    </div>
+    <div class="opener">"Let's clarify something immediately."</div>
+    <div class="key-line">Three NOs: not a replacement, not a tool-chain swap, not a bottleneck. Then the line: <strong>"A system that remembers… so your people don't have to."</strong></div>
+    <div class="handoff">→ Hand to SAMBIT (Slide 23)</div>
+  </div>
+  
+  <div class="card gobind">
+    <div class="card-header">
+      <span class="slide-num gobind">Slide 27</span>
+      <span class="timing">~21:00</span>
+    </div>
+    <div class="opener">"The real technical breakthrough is not generation. It's linkage."</div>
+    <div class="key-line">Intent → Definition → Code → Evidence. Then the JP callback: <strong>"When a fence goes down, raptors don't politely stay in their zone. Smart SDLC sees the cascade before it happens."</strong> Close: <strong>"Nothing floats. Nothing is lost."</strong></div>
+    <div class="handoff">→ Hand to NARAYANAN (Slide 28)</div>
+  </div>
+  
+  <div class="section-marker">ACT 3 — ARCHITECTURE & TRUST (27:00 – 32:00)</div>
+  
+  <div class="card gobind">
+    <div class="card-header">
+      <span class="slide-num gobind">Slide 35</span>
+      <span class="timing">~27:00</span>
+    </div>
+    <div class="opener">"Today architecture is a PDF. Read once. Then slowly violated."</div>
+    <div class="key-line">Architecture becomes queryable, enforceable, measurable. JP callback: <strong>"The fences don't just hold. They report. They adapt. And they never forget which dinosaur they were built to contain."</strong></div>
+    <div class="handoff">→ Hand to SAMBIT (Slide 36)</div>
+  </div>
+  
+  <div class="card gobind">
+    <div class="card-header">
+      <span class="slide-num gobind">Slide 39</span>
+      <span class="timing">~28:30</span>
+    </div>
+    <div class="opener">"When production fails, today we see: Logs. Metrics. Stack traces."</div>
+    <div class="key-line"><strong>"Not the design assumption that caused the failure."</strong> RCA = graph traversal. Close: "Operational integrity becomes systemic."</div>
+  </div>
+  
+  <div class="card interaction">
+    <div class="card-header">
+      <span class="slide-num interaction">INTERACTION 4 — SKEPTIC</span>
+      <span class="timing">~29:30</span>
+    </div>
+    <div class="opener">"Now — I know what some of you are thinking."</div>
+    <div class="key-line">"Can AI be trusted inside a governed delivery pipeline?" <strong>Pause. "Fair question. Let me show you exactly how we built that trust."</strong></div>
+    <div class="stage-note">⚡ This is a bridge — the audience asked the question in their head, you just voiced it. Now they WANT the architecture answer.</div>
+  </div>
+  
+  <div class="card gobind">
+    <div class="card-header">
+      <span class="slide-num gobind">Slide 40</span>
+      <span class="timing">~30:00 — ⭐ THE ENGINE</span>
+    </div>
+    <div class="opener">"Think of it as a very intelligent, very disciplined factory floor."</div>
+    <div class="key-line">Five layers — one sentence each. Keep it calm, confident. Three steps (Input → Processing → Storage). Then THE line: <strong>"Intelligence is AI-driven. Authority is always Human. That is the Governance Lock."</strong> Close: <strong>"An exoskeleton for talent, not a replacement."</strong></div>
+    <div class="stage-note">⚡ Don't rush. You've earned the room's attention. Deliver the Governance Lock like a promise — because it is.</div>
+    <div class="handoff">→ Hand to SAMBIT (Slide 41 — Roadmap)</div>
+  </div>
+  
+  <div class="card joint">
+    <div class="card-header">
+      <span class="slide-num joint">Slide 43 — CLOSE</span>
+      <span class="timing">~37:15</span>
+    </div>
+    <div class="opener">After Narayanan says "Validate" — your turn:</div>
+    <div class="key-line"><strong>"Bring us one use case. Let us run it through the Delivery Graph. Compare our coherence against your current process."</strong></div>
+    <div class="handoff">→ Sambit closes → All: "Thank you."</div>
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- QUICK REFERENCE — ALL SPEAKERS -->
+<!-- ============================================== -->
+<div class="speaker-section page-break">
+  <div class="speaker-title" style="background:#1B1F3B;">QUICK REFERENCE — TIMING & HANDOFFS</div>
+  
+  <div class="card" style="border-left-color:#1B1F3B; padding:20px;">
+    <table style="width:100%; border-collapse:collapse; font-size:13px;">
+      <tr style="background:#1B1F3B; color:white;">
+        <th style="padding:8px; text-align:left;">Time</th>
+        <th style="padding:8px; text-align:left;">Slides</th>
+        <th style="padding:8px; text-align:left;">Speaker</th>
+        <th style="padding:8px; text-align:left;">What's Happening</th>
+      </tr>
+      <tr style="background:#EBF2F8;"><td style="padding:6px;">0:00</td><td>1</td><td style="color:#2C5F8A; font-weight:600;">NAR</td><td>"Imagine" opening</td></tr>
+      <tr><td style="padding:6px;">1:00</td><td>2</td><td style="color:#2E7D5B; font-weight:600;">GOB</td><td>Skills intro</td></tr>
+      <tr style="background:#EBF2F8;"><td style="padding:6px;">2:00</td><td>3–4</td><td style="font-weight:600;">ALL → NAR</td><td>Speaker intros + roadmap</td></tr>
+      <tr><td style="padding:6px;">3:30</td><td>5–6</td><td style="color:#2C5F8A; font-weight:600;">NAR</td><td>Scale Reality + Hammond</td></tr>
+      <tr style="background:#FFF3EE;"><td style="padding:6px;">5:00</td><td>—</td><td style="color:#E8652A; font-weight:600;">INT 1</td><td>Show of hands (NAR)</td></tr>
+      <tr><td style="padding:6px;">5:30</td><td>7</td><td style="color:#7B4B94; font-weight:600;">SAM</td><td>Paradox + Scale Tax</td></tr>
+      <tr style="background:#EBF2F8;"><td style="padding:6px;">6:00</td><td>8–9</td><td style="color:#2E7D5B; font-weight:600;">GOB</td><td>Entropy + Context Gap</td></tr>
+      <tr><td style="padding:6px;">7:00</td><td>10</td><td style="color:#7B4B94; font-weight:600;">SAM</td><td>Context drift story</td></tr>
+      <tr style="background:#FFF3EE;"><td style="padding:6px;">7:30</td><td>—</td><td style="color:#E8652A; font-weight:600;">INT 2</td><td>Digital Detective (SAM + GOB tag)</td></tr>
+      <tr><td style="padding:6px;">8:00</td><td>11–12</td><td style="color:#2C5F8A; font-weight:600;">NAR</td><td>Coordination Trap + JP comic</td></tr>
+      <tr style="background:#EBF2F8;"><td style="padding:6px;">10:30</td><td>13–14</td><td style="color:#2C5F8A; font-weight:600;">NAR → SAM</td><td>Crisis summary → "Why not tools?"</td></tr>
+      <tr><td style="padding:6px;">11:00</td><td>15–16</td><td style="color:#7B4B94; font-weight:600;">SAM</td><td>Tool stack gap</td></tr>
+      <tr style="background:#EBF2F8;"><td style="padding:6px;">12:00</td><td>17–18</td><td style="color:#2E7D5B; font-weight:600;">GOB</td><td>Nedry story ⭐</td></tr>
+      <tr style="background:#FFF3EE;"><td style="padding:6px;">13:30</td><td>—</td><td style="color:#E8652A; font-weight:600;">INT 3</td><td>"Let's not go there" (GOB)</td></tr>
+      <tr style="background:#FFFDE8;"><td style="padding:6px;">14:00</td><td>19–21</td><td style="color:#2C5F8A; font-weight:600;">NAR</td><td>THE PIVOT — Memory problem → Smart SDLC reveal</td></tr>
+      <tr><td style="padding:6px;">17:00</td><td>22</td><td style="color:#2E7D5B; font-weight:600;">GOB</td><td>What Smart SDLC is NOT</td></tr>
+      <tr style="background:#EBF2F8;"><td style="padding:6px;">17:30</td><td>23–24</td><td style="color:#7B4B94; font-weight:600;">SAM</td><td>Watch It Work ⭐⭐</td></tr>
+      <tr><td style="padding:6px;">20:00</td><td>25–26</td><td style="color:#7B4B94; font-weight:600;">SAM</td><td>Four capabilities + translation tax</td></tr>
+      <tr style="background:#EBF2F8;"><td style="padding:6px;">21:00</td><td>27</td><td style="color:#2E7D5B; font-weight:600;">GOB</td><td>Linkage + raptor cascade</td></tr>
+      <tr><td style="padding:6px;">22:00</td><td>28–29</td><td style="color:#2C5F8A; font-weight:600;">NAR → SAM</td><td>T-Rex fencing → Closed loop</td></tr>
+      <tr style="background:#EBF2F8;"><td style="padding:6px;">24:00</td><td>30–34</td><td style="color:#2C5F8A; font-weight:600;">NAR</td><td>Product → Leadership personas</td></tr>
+      <tr><td style="padding:6px;">27:00</td><td>35</td><td style="color:#2E7D5B; font-weight:600;">GOB</td><td>Architecture as living system</td></tr>
+      <tr style="background:#EBF2F8;"><td style="padding:6px;">26:00</td><td>36–38</td><td style="color:#7B4B94; font-weight:600;">SAM</td><td>Developer experience</td></tr>
+      <tr><td style="padding:6px;">28:30</td><td>39</td><td style="color:#2E7D5B; font-weight:600;">GOB</td><td>Ops / RCA</td></tr>
+      <tr style="background:#FFF3EE;"><td style="padding:6px;">29:30</td><td>—</td><td style="color:#E8652A; font-weight:600;">INT 4</td><td>Skeptic question (GOB)</td></tr>
+      <tr style="background:#EBF2F8;"><td style="padding:6px;">30:00</td><td>40</td><td style="color:#2E7D5B; font-weight:600;">GOB</td><td>Architecture + Governance Lock ⭐</td></tr>
+      <tr><td style="padding:6px;">32:00</td><td>41</td><td style="color:#7B4B94; font-weight:600;">SAM</td><td>Roadmap (Phase 1 → Phase 2)</td></tr>
+      <tr style="background:#EBF2F8;"><td style="padding:6px;">33:00</td><td>42</td><td style="color:#2C5F8A; font-weight:600;">NAR</td><td>ROI — 4 numbers + 3 shifts</td></tr>
+      <tr style="background:#FFF3EE;"><td style="padding:6px;">36:00</td><td>—</td><td style="color:#E8652A; font-weight:600;">FINAL</td><td>"Reducing Rework or Moving Faster?"</td></tr>
+      <tr style="background:#FFFDE8;"><td style="padding:6px;">37:00</td><td>43</td><td style="font-weight:600;">NAR → GOB → SAM → ALL</td><td>Joint close: "Thank you."</td></tr>
+    </table>
+  </div>
+</div>
+
+</body>
+</html>
